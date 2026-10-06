@@ -927,7 +927,8 @@ function loadDB(){
 }
 let db = loadDB();
 function saveDB(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ toast('⚠️ No se pudo guardar el progreso en esta PC'); } }
-const me = () => db.current ? db.players[db.current] : null;
+let preview = null;     // modo de prueba docente: jugador temporal en memoria, nada se guarda ni se envía al ranking
+const me = () => preview || (db.current ? db.players[db.current] : null);
 const xpOf = p => Object.entries(p.done).reduce((s,[id,d])=>s+(LV[id]?LV[id].xp+(d.stars-1)*10:0),0);
 const coinsOf = p => 10 + Object.values(p.done).reduce((s,d)=>s+d.stars*3,0) - (p.spent||0);
 const XP_PER_LEVEL = 150;
@@ -935,6 +936,7 @@ const levelOf = xp => Math.floor(xp/XP_PER_LEVEL)+1;
 const rankOf = lv => RANKS[Math.min(Math.floor((lv-1)/2),RANKS.length-1)];
 const isUnlocked = i => {
   const L=LEVELS[i], p=me();
+  if(preview) return true;
   if(L.requires) return worldDone(p,L.requires.world) && (!L.requires.level || !!p.done[L.requires.level]);   // salas de escape: se abren al terminar un mundo
   return i===0 || !!p.done[LEVELS[i-1].id];
 };
@@ -989,7 +991,7 @@ async function withTimeout(url,opts,ms=8000){
   try{ return await fetch(url,{...opts,signal:ac.signal}); } finally{ clearTimeout(t); }
 }
 async function syncProgress(p,force){
-  if(!RANKING_URL||!p) return;
+  if(!RANKING_URL||!p||p===preview) return;
   const s=summary(p), sig=`${s.xp}|${s.m}|${s.s}|${s.e}`;
   if(p.sync===sig) return;
   if(!force && Date.now()-lastSync<4000) return;
@@ -1030,7 +1032,7 @@ function topbar(){
     h('div',{class:'grow'}),
     p && playerChip(p),
     p && h('button',{class:'icon-btn',title:'Ranking',text:'🏆',onclick:()=>{ sfx.click(); screenRanking(); }}), snd,
-    p && h('button',{class:'icon-btn',title:'Cambiar de jugador',text:'🚪',onclick:()=>{ db.current=null; saveDB(); screenLogin(); }}));
+    p && h('button',{class:'icon-btn',title:'Cambiar de jugador',text:'🚪',onclick:()=>{ preview=null; db.current=null; saveDB(); screenLogin(); }}));
 }
 
 /* ---------- login ---------- */
@@ -1096,6 +1098,9 @@ function screenMap(){
   });
   const future=FUTURE.map((f,i)=>h('section',{class:'world card future'},h('div',{class:'world-head'},h('h2',{text:`🔒 Mundo ${WORLDS.length+i+1}: ${f.name}`}),h('span',{class:'muted',text:'Próximamente'})),h('p',{class:'muted'},f.icon+' ',rich(f.desc))));
   mount(
+    preview && h('div',{class:'banner',style:'display:flex;gap:12px;align-items:center;flex-wrap:wrap'},
+      h('span',{text:'🧪 Modo prueba docente: todas las misiones están desbloqueadas y nada de lo que hagas se guarda ni va al ranking.'}),
+      h('button',{class:'btn small',onclick:()=>{ preview=null; screenTeacher(); }},'Salir del modo prueba')),
     h('div',{class:'card',style:'margin-bottom:18px'},
       h('div',{class:'row'},h('h2',{style:'margin:0',text:`¡Hola, ${p.name.split(' ')[0]}! ${p.avatar}`}),h('div',{class:'grow'}),
         h('button',{class:'btn small primary',onclick:screenRanking},'🏆 Ranking'),
@@ -1583,6 +1588,7 @@ function screenTeacher(){
     h('div',{class:'row'},h('h2',{style:'margin:0',text:'🧑‍🏫 Panel docente'}),h('div',{class:'grow'}),h('button',{class:'btn ghost',onclick:()=>{ teacherOK=false; db.current?screenMap():screenLogin(); }},'Salir')),
     h('p',{class:'muted',text:'El progreso se guarda en el navegador de cada PC. Para juntar a todo el curso: en cada PC exportá el archivo, y acá importá todos los archivos (el mismo alumno en distintas PC se combina solo).'}),
     h('div',{class:'row',style:'margin-bottom:12px'},sel,info,h('div',{class:'grow'}),
+      h('button',{class:'btn small primary',onclick:()=>{ preview=fixPlayer({ id:'preview', name:'Docente', curso:'—', avatar:'🧑‍🏫', spent:-500 }); screenMap(); }},'🧪 Probar el juego (todo desbloqueado)'),
       h('button',{class:'btn small',onclick:csv},'📊 Exportar planilla (Excel)'),
       h('button',{class:'btn small',onclick:()=>download(`htmlquest-copia-${new Date().toISOString().slice(0,10)}.json`,JSON.stringify({app:'htmlquest',version:1,players:db.players},null,1),'application/json')},'💾 Exportar todo (.json)'),
       h('button',{class:'btn small',onclick:()=>fileIn.click()},'📥 Importar archivos'),fileIn),
