@@ -169,6 +169,20 @@ code.ic{font-family:var(--mono);background:var(--code);border:1px solid var(--li
 .browser iframe{flex:1;border:0;width:100%;min-height:230px;background:#fff}
 .pvlabel{font-weight:700;color:var(--muted);font-size:14px;margin-bottom:4px}
 
+/* sala de escape */
+.room{background:radial-gradient(600px 240px at 50% 0,#3a2f6b66,transparent),var(--surface)}
+.scene{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.obj{background:var(--surface2);border:3px solid var(--line);border-radius:16px;padding:16px 8px;text-align:center;cursor:pointer;color:var(--text);box-shadow:0 5px 0 #0b0d20;transition:transform .12s}
+.obj .em{font-size:52px;line-height:1.2}
+.obj:hover:not(:disabled){transform:translateY(-3px) rotate(-1.5deg);border-color:var(--gold)}
+.obj.done{border-color:var(--green);background:#143a2a;cursor:default}
+.obj.door{border-color:var(--orange)}
+.obj:disabled{opacity:.7;cursor:not-allowed}
+.obj.done:disabled{opacity:1}
+.slot{display:inline-grid;place-items:center;width:44px;height:54px;border:3px dashed var(--line);border-radius:10px;font-family:var(--mono);font-size:28px;font-weight:800;color:var(--gold)}
+.slot.on{border-style:solid;border-color:var(--gold);background:#3a3410}
+.door-in{font-size:30px;width:9ch;padding:8px}
+
 /* ranking */
 .podium{display:flex;gap:12px;justify-content:center;align-items:flex-end;flex-wrap:wrap}
 .pod{flex:1;min-width:150px;max-width:230px;text-align:center;background:var(--surface2);border:3px solid var(--line);border-radius:var(--radius);padding:12px 8px}
@@ -777,10 +791,112 @@ WORLDS.push(
      recap:"¡Lo lograste! Creaste un sitio con estructura, texto, listas, enlaces e imágenes. Ya sabés HTML básico." }
   ]}
 );
+/* ---------- Mundo 6: Sala de escape ---------- */
+const ESC_INTRO = "¡Ayuda, soy Byte! 🤖 El Virus Bug me encerró en el laboratorio con candados de HTML. En cada sala hay **objetos para investigar**: cada uno es un desafío y, al resolverlo, te da un **número de pista**. Con todos los números, abrís la puerta.";
+WORLDS.push(
+ { id:6, name:'Sala de escape', icon:'🚪', desc:'El Virus Bug encerró a Byte. Resolvé retos, juntá pistas y escapá. Cada sala se abre al terminar un mundo.',
+  levels:[
+   { id:'6.1', title:'Escape 1: la sala de servidores', short:'Sala 1', type:'escape', xp:40, hearts:5, requires:{world:1}, lockNote:'Terminá el Mundo 1',
+     lesson:{ text:[ESC_INTRO,"**Sala de servidores:** todo funciona con el esqueleto de HTML. ¿Te acordás de la cabeza y el cuerpo?"], code:null },
+     story:"Las luces parpadean y las máquinas zumban. Revisá los tres objetos para encontrar la clave de la puerta.",
+     intro:"Byte: ¡Tocá los objetos de la sala! Cada desafío resuelto te da un número. 🔢", code:'417',
+     hint:"Tocá cada objeto de la sala. Cuando tengas los 3 números, la puerta se habilita: ingresalos en el orden en que aparecen en el cuaderno.",
+     puzzles:[
+       { emoji:'🖥️', name:'Monitor', clue:'4', type:'fill', bank:['html','head','title'], hint:"El que envuelve todo es `html`. La pestaña se nombra con `title` y la información va en `head`.",
+         code:`<!DOCTYPE html>
+<{{html}}>
+  <{{head}}>
+    <{{title}}>Servidor</{{title}}>
+  </{{head}}>
+  <body>Acceso concedido</body>
+</{{html}}>` },
+       { emoji:'🗄️', name:'Archivero', clue:'1', type:'bugs', hint:"Fijate cómo está escrito `title` en la línea 4 y cómo cierra el documento el final.",
+         codeLines:[`<!DOCTYPE html>`,`<html>`,`  <head>`,`    <tilte>Archivo secreto</title>`,`  </head>`,`  <body>`,`    Nada por acá`,`  </body>`,`</htlm>`],
+         bugs:[3,8], explain:{3:"`<tilte>` está mal escrita: es `<title>`.",8:"`</htlm>` está mal escrita: es `</html>`."} },
+       { emoji:'📦', name:'Caja fuerte', clue:'7', type:'quiz', hint:"Lo que se ve va en el cuerpo y todo se cierra al final con la etiqueta más grande.",
+         questions:[
+           { q:"¿Dónde va el contenido que se ve en la página?", opts:["Dentro de `<body>`","Dentro de `<head>`","Dentro de `<title>`","Afuera de `<html>`"], a:0, why:"El `body` es el cuerpo visible." },
+           { q:"¿Qué etiqueta cierra TODA la página?", opts:["`</html>`","`</head>`","`</body>`","`</title>`"], a:0, why:"`html` abre primero y cierra último." } ] }
+     ],
+     recap:"Escapaste de la sala de servidores usando el esqueleto de HTML." },
+
+   { id:'6.2', title:'Escape 2: el pasillo de los carteles', short:'Sala 2', type:'escape', xp:40, hearts:5, requires:{world:2}, lockNote:'Terminá el Mundo 2',
+     lesson:{ text:["**Pasillo de los carteles:** acá todo es texto: títulos, párrafos, negritas y saltos de línea."], code:null },
+     story:"Cartelitos por todos lados. ¡Alguien escribió mal las notas! Reparalas para sacar los números.",
+     intro:"Byte: ¡Cuidado con los bichos en el texto! 🐛", code:'263',
+     hint:"Investigá los tres objetos del pasillo y juntá los números en orden.",
+     puzzles:[
+       { emoji:'🪧', name:'Cartel digital', clue:'2', type:'code', placeholder:'', starter:'', hint:"Ejemplo: `<h1>Bienvenidos</h1>` y después `<p>Salí por la puerta</p>`.",
+         rules:[{label:"Un `<h1>` con texto",ok:(c,d)=>!!textOf(d.querySelector('h1'))},{label:"Un `<p>` con texto",ok:(c,d)=>!!textOf(d.querySelector('p'))}] },
+       { emoji:'🔦', name:'Linterna', clue:'6', type:'match', hint:"`h1` es el título, `p` el párrafo, `strong` la negrita, `em` la cursiva y `br` el salto.",
+         pairs:[{a:'<h1>',b:'Título principal'},{a:'<p>',b:'Párrafo'},{a:'<strong>',b:'Negrita'},{a:'<em>',b:'Cursiva'},{a:'<br>',b:'Salto de línea'}] },
+       { emoji:'📜', name:'Nota arrugada', clue:'3', type:'bugs', time:45, hint:"Una etiqueta sin cerrar, dos cruzadas y una que no existe.",
+         codeLines:[`<h2>Nota secreta</h2>`,`<p>El código está <strong>escondido<strong></p>`,`<p>Mirá debajo de la <em>mesa</p></em>`,`<ph>Buscá otra vez</ph>`,`<p>Línea uno<br>Línea dos</p>`],
+         bugs:[1,2,3], explain:{1:"Falta la barra: es `</strong>`.",2:"Mal anidado: primero se cierra `</em>` y después `</p>`.",3:"`<ph>` no existe: es `<p>`."} }
+     ],
+     recap:"El texto en HTML necesita las etiquetas bien abiertas y cerradas." },
+
+   { id:'6.3', title:'Escape 3: la biblioteca', short:'Sala 3', type:'escape', xp:40, hearts:5, requires:{world:3}, lockNote:'Terminá el Mundo 3',
+     lesson:{ text:["**La biblioteca:** listas, estantes y enlaces. ¡El conocimiento abre puertas!"], code:null },
+     story:"Libros por todos lados. Ordená, enlazá y respondé para encontrar la clave.",
+     intro:"Byte: ¡Los libros guardan los números! 📚", code:'859',
+     hint:"Resolvé los tres objetos. La clave son los números en orden.",
+     puzzles:[
+       { emoji:'📚', name:'Estantería', clue:'8', type:'order', hint:"Primero el título, después `ul` abre, los elementos y `ul` cierra.",
+         blocks:['<h2>Libros</h2>','<ul>','<li>Matemática</li>','<li>Lengua</li>','</ul>'],
+         target:`<h2>Libros</h2>\n<ul>\n<li>Matemática</li>\n<li>Lengua</li>\n</ul>` },
+       { emoji:'💻', name:'Computadora', clue:'5', type:'code', placeholder:'', starter:`<p>Visitá nuestro sitio: </p>`, hint:"Ejemplo: `<a href=\"https://www.google.com\">Google</a>`.",
+         rules:[{label:"Un párrafo `<p>` con texto",ok:(c,d)=>!!textOf(d.querySelector('p'))},{label:"Un enlace `<a href=\"https://…\">` con texto",ok:(c,d)=>links(d).length>=1}] },
+       { emoji:'📖', name:'Libro viejo', clue:'9', type:'quiz', hint:"`ol` = ordenada = números. El destino de un enlace va en un atributo que empieza con h.",
+         questions:[
+           { q:"¿Qué etiqueta crea una lista NUMERADA?", opts:["`<ol>`","`<ul>`","`<li>`","`<a>`"], a:0, why:"`ol` = *ordered list*." },
+           { q:"¿Qué atributo dice a dónde lleva un enlace?", opts:["`href`","`src`","`alt`","`width`"], a:0, why:"`href` es el destino del enlace." } ] }
+     ],
+     recap:"Con listas y enlaces ordenás y conectás la información." },
+
+   { id:'6.4', title:'Escape 4: el estudio de fotos', short:'Sala 4', type:'escape', xp:40, hearts:5, requires:{world:4}, lockNote:'Terminá el Mundo 4',
+     lesson:{ text:["**El estudio de fotos:** imágenes con `src` y `alt`. Cuidado con los nombres de archivo."], code:null },
+     story:"Cámaras, cuadros y un proyector. Algunas imágenes están rotas: ¡arreglalas!",
+     intro:"Byte: ¡Las fotos esconden los números! 📷", code:'302',
+     hint:"Resolvé los tres objetos. Las imágenes disponibles están listadas en cada desafío con imágenes.",
+     puzzles:[
+       { emoji:'📷', name:'Cámara', clue:'3', type:'fill', files:true, bank:['img','src','alt'], hint:"La etiqueta es `img`, el archivo va en `src` y la descripción en `alt`.",
+         code:`<{{img}} {{src}}="robot.png" {{alt}}="Un robot">` },
+       { emoji:'🖼️', name:'Cuadro roto', clue:'0', type:'code', files:true, placeholder:'', hint:"Revisá los nombres: `pizza.jpg` y `gato.png`.",
+         starter:`<img src="pizzza.jpg" alt="Una pizza">\n<img src="gato.jpg" alt="Un gato">\n`,
+         rules:[{label:"Hay al menos 2 imágenes",ok:(c,d)=>d.body.querySelectorAll('img').length>=2},{label:"Todas las imágenes se ven y tienen `alt`",ok:(c,d)=>{const i=[...d.body.querySelectorAll('img')];return i.length>0&&i.every(x=>validImg(x)&&hasAlt(x));}}] },
+       { emoji:'🎞️', name:'Proyector', clue:'2', type:'bugs', time:40, hint:"Buscá comillas que faltan, cierres que sobran y etiquetas inventadas.",
+         codeLines:[`<img src="perro.png" alt="Un perro">`,`<img src="gato.png" alt=Gato">`,`<img src="pizza.jpg" alt="Una pizza"></img>`,`<imagen src="robot.png" alt="Un robot">`,`<img src="logo.png" alt="Logo">`],
+         bugs:[1,2,3], explain:{1:"Falta una comilla: `alt=\"Gato\"`.",2:"`img` no se cierra: sobra el `</img>`.",3:"La etiqueta es `<img>`, no `<imagen>`."} }
+     ],
+     recap:"Una imagen bien hecha necesita su archivo correcto y una descripción." },
+
+   { id:'6.5', title:'Escape final: la guarida del Virus Bug', short:'👑 Guarida', type:'escape', xp:100, boss:true, hearts:6, requires:{world:5,level:'6.4'}, lockNote:'Terminá el Mundo 5 y la Sala 4',
+     lesson:{ text:["¡Llegaste a la **guarida del Virus Bug**! Es la sala más difícil: 4 desafíos mezclando **todo** lo que aprendiste. Tenés 6 vidas. Si lo lográs, Byte queda libre. ¡Suerte!"], code:null },
+     story:"Cables, pantallas rotas y un mal olor a código sucio. El Virus Bug te espera detrás de esa puerta.",
+     intro:"Byte: ¡Es ahora o nunca! Cuatro desafíos, cuatro números. 💪", code:'9416',
+     hint:"Resolvé los cuatro objetos y escribí los 4 números en orden.",
+     puzzles:[
+       { emoji:'🧪', name:'Probeta', clue:'9', type:'quiz', hint:"Repasá: `img` no se cierra, `alt` describe imágenes y `ul` lleva `li`.",
+         questions:[
+           { q:"¿Cuál de estas etiquetas NO se cierra?", opts:["`<img>`","`<p>`","`<ul>`","`<a>`"], a:0, why:"`img` es una etiqueta vacía." },
+           { q:"¿Con qué atributo se describe una imagen?", opts:["`alt`","`href`","`<br>`","`<title>`"], a:0, why:"El `alt` describe la imagen." },
+           { q:"¿Qué va SIEMPRE adentro de un `<ul>`?", opts:["Elementos `<li>`","Otro `<html>`","Un `<title>`","Nada"], a:0, why:"Los `li` son los elementos de la lista." } ] },
+       { emoji:'🔬', name:'Microscopio', clue:'4', type:'match', hint:"Pensá en cada misión.",
+         pairs:[{a:'<ol>',b:'Lista numerada'},{a:'href',b:'Destino del enlace'},{a:'alt',b:'Descripción de la imagen'},{a:'<strong>',b:'Texto en negrita'},{a:'<title>',b:'Nombre de la pestaña'}] },
+       { emoji:'💾', name:'Disco corrupto', clue:'1', type:'bugs', time:60, hint:"Hay un cierre sin barra, uno cruzado, una lista cerrada con otro nombre y un atributo mal escrito.",
+         codeLines:[`<h1>Informe secreto<h1>`,`<img src="robot.png" alt="Byte">`,`<ul>`,`  <li>Nombre: Bug</li>`,`  <li>Debilidad: <strong>HTML bien escrito</li>`,`</ol>`,`<p>Ver <a hre="https://es.wikipedia.org">más</a></p>`],
+         bugs:[0,4,5,6], explain:{0:"El cierre necesita la barra: `</h1>`.",4:"Falta cerrar `</strong>` antes de `</li>`.",5:"La lista abrió con `ul`: se cierra con `</ul>`.",6:"El atributo es `href`, no `hre`."} },
+       { emoji:'💣', name:'Antivirus', clue:'6', type:'code', files:true, placeholder:'', starter:'', hint:"Armá un `<h1>`, un `<img src=\"robot.png\" alt=\"…\">`, un `<ul>` con dos `<li>` y un enlace `<a href=\"https://…\">`.",
+         rules:[{label:"Un `<h1>` con texto",ok:(c,d)=>!!textOf(d.querySelector('h1'))},{label:"Una imagen que se vea, con `alt`",ok:(c,d)=>goodImgs(d).length>=1},{label:"Una lista con al menos 2 `<li>`",ok:(c,d)=>liCount(d,'ul')+liCount(d,'ol')>=2},{label:"Un enlace `<a href=\"https://…\">` con texto",ok:(c,d)=>links(d).length>=1}] }
+     ],
+     recap:"¡Liberaste a Byte y derrotaste al Virus Bug! Sos un verdadero maestro del HTML." }
+  ]}
+);
 const FUTURE = [];
 const LEVELS = WORLDS.flatMap(w => w.levels.map(l => Object.assign(l,{world:w})));
 const LV = Object.fromEntries(LEVELS.map(l=>[l.id,l]));
-const TYPEINFO = { quiz:['🧠','Preguntas'], order:['🧩','Ordenar bloques'], fill:['✏️','Completar'], bugs:['🐞','Cazabichos'], code:['⌨️','Programar'], match:['🧲','Unir parejas'] };
+const TYPEINFO = { quiz:['🧠','Preguntas'], order:['🧩','Ordenar bloques'], fill:['✏️','Completar'], bugs:['🐞','Cazabichos'], code:['⌨️','Programar'], match:['🧲','Unir parejas'], escape:['🚪','Sala de escape'] };
 
 /* ---------- insignias ---------- */
 const worldDone = (p,n) => WORLDS[n-1].levels.every(l=>p.done[l.id]);
@@ -795,6 +911,8 @@ const BADGES = [
   { id:'w3', icon:'🔗', name:'Rey de los enlaces', desc:'Terminá el Mundo 3', test:p=>worldDone(p,3) },
   { id:'w4', icon:'📸', name:'Fotógrafo web', desc:'Terminá el Mundo 4', test:p=>worldDone(p,4) },
   { id:'w5', icon:'🏰', name:'Rey del HTML', desc:'Vencé al jefe final', test:p=>worldDone(p,5) },
+  { id:'esc1', icon:'🚪', name:'Escapista', desc:'Escapá de la primera sala', test:p=>!!p.done['6.1'] },
+  { id:'esc5', icon:'🤖', name:'Héroe de Byte', desc:'Liberá a Byte del Virus Bug', test:p=>!!p.done['6.5'] },
   { id:'gold', icon:'👑', name:'Estrella dorada', desc:'3 estrellas en todo un mundo', test:p=>WORLDS.some(w=>w.levels.every(l=>p.done[l.id]&&p.done[l.id].stars===3)) }
 ];
 const earned = p => BADGES.filter(b=>b.test(p)).map(b=>b.id);
@@ -815,7 +933,11 @@ const coinsOf = p => 10 + Object.values(p.done).reduce((s,d)=>s+d.stars*3,0) - (
 const XP_PER_LEVEL = 150;
 const levelOf = xp => Math.floor(xp/XP_PER_LEVEL)+1;
 const rankOf = lv => RANKS[Math.min(Math.floor((lv-1)/2),RANKS.length-1)];
-const isUnlocked = i => i===0 || !!(me().done[LEVELS[i-1].id]);
+const isUnlocked = i => {
+  const L=LEVELS[i], p=me();
+  if(L.requires) return worldDone(p,L.requires.world) && (!L.requires.level || !!p.done[L.requires.level]);   // salas de escape: se abren al terminar un mundo
+  return i===0 || !!p.done[LEVELS[i-1].id];
+};
 const nextLevelId = () => { const p=me(); const L=LEVELS.find(l=>!p.done[l.id]); return L?L.id:null; };
 
 function cleanPlayer(raw){
@@ -887,7 +1009,7 @@ const app = document.getElementById('app');
 let S = null;              // sesión de misión actual
 let teacherOK = false;
 function clearTimers(){ if(S&&S.timer){ clearInterval(S.timer); S.timer=null; } }
-function mount(...nodes){ clearTimers(); app.replaceChildren(topbar(), h('main',{class:'wrap'},...nodes)); window.scrollTo(0,0); }
+function mount(...nodes){ clearTimers(); document.querySelectorAll('.overlay').forEach(o=>o.remove()); app.replaceChildren(topbar(), h('main',{class:'wrap'},...nodes)); window.scrollTo(0,0); }
 
 function playerChip(p){
   const xp=xpOf(p), lv=levelOf(xp);
@@ -968,7 +1090,8 @@ function screenMap(){
         return h('button',{class:`node${L.boss?' boss':''}${d?' done':''}${!ok?' locked':''}${L.id===nxt?' next':''}`,disabled:!ok,title:L.title,onclick:()=>{ sfx.click(); showLesson(L); }},
           h('span',{class:'bub',text:!ok?'🔒':d?'✔':L.boss?'👑':TYPEINFO[L.type][0]}),
           h('span',{class:'stars',text:d?'★'.repeat(d.stars)+'☆'.repeat(3-d.stars):''}),
-          h('span',{class:'lbl',text:L.short}));
+          h('span',{class:'lbl',text:L.short}),
+          !ok && L.lockNote && h('span',{class:'lbl muted',text:L.lockNote}));
       })));
   });
   const future=FUTURE.map((f,i)=>h('section',{class:'world card future'},h('div',{class:'world-head'},h('h2',{text:`🔒 Mundo ${WORLDS.length+i+1}: ${f.name}`}),h('span',{class:'muted',text:'Próximamente'})),h('p',{class:'muted'},f.icon+' ',rich(f.desc))));
@@ -1087,7 +1210,7 @@ function bad(msg,opts={}){
 }
 function useHint(){
   if(S.finished) return;
-  const hints=[].concat(S.lvl.hint||[]);
+  const hints=[].concat((S.curPuzzle&&S.curPuzzle.hint)||S.lvl.hint||[]);
   if(S.hints>=hints.length){ say('Ya te di todas las pistas que tengo 😅','tip'); return; }
   const p=me();
   if(coinsOf(p)<HINT_COST){ say('No te alcanzan las monedas 🪙. Ganás más completando misiones.','bad'); return; }
@@ -1106,6 +1229,7 @@ function gameOver(){
 function nextBtn(label,fn){ return h('button',{class:'btn green big',style:'margin-top:12px',onclick:fn},label); }
 
 function win(){
+  if(S.onWin){ const f=S.onWin; S.onWin=null; f(); return; }     // desafío dentro de una sala de escape
   if(S.finished) return; S.finished=true; clearTimers();
   const L=S.lvl, p=me();
   const stars=S.errors===0?3:S.errors<=2?2:1;
@@ -1120,7 +1244,7 @@ function win(){
 }
 function screenResult(L,stars,dxp,dcoins,lvBefore,lvAfter,newBadges){
   sfx.win(); confetti(L.boss?90:46);
-  const i=LEVELS.indexOf(L), next=LEVELS[i+1];
+  const i=LEVELS.indexOf(L), last=i===LEVELS.length-1, next=(!last && isUnlocked(i+1)) ? LEVELS[i+1] : null;
   mount(h('div',{class:'result card'},
     h('h1',{text:L.boss?'🏆 ¡Jefe derrotado!':'¡Misión cumplida! 🎉'}),
     h('div',{class:'bigstars'},[1,2,3].map(n=>h('span',{text:n<=stars?'★':'☆'}))),
@@ -1136,7 +1260,7 @@ function screenResult(L,stars,dxp,dcoins,lvBefore,lvAfter,newBadges){
       h('button',{class:'btn',onclick:()=>startLevel(L)},'🔁 Repetir'),
       h('button',{class:'btn',onclick:screenRanking},'🏆 Ranking'),
       h('button',{class:'btn ghost',onclick:screenMap},'Mapa')),
-    !next && h('p',{class:'banner',text:'🎊 ¡Terminaste HTML Quest! Ya sabés armar páginas web con HTML. Repetí misiones para conseguir las 3 estrellas.'})));
+    last && h('p',{class:'banner',text:'🎊 ¡Terminaste HTML Quest! Ya sabés armar páginas web con HTML. Repetí misiones para conseguir las 3 estrellas.'})));
 }
 
 /* ============================================================
@@ -1299,6 +1423,59 @@ TYPES.match = (box,L)=>{
   box.replaceChildren(h('div',{class:'card'},
     h('div',{class:'qhead',text:'Tocá una etiqueta y después su pareja'}),
     h('div',{class:'split'},h('div',{class:'pool',style:'flex-direction:column'},lefts),h('div',{class:'pool',style:'flex-direction:column'},rights)),next));
+};
+
+/* --- sala de escape --- */
+// Abre un desafío (cualquiera de los otros tipos) dentro de una ventana; al resolverlo llama a onSolved.
+function openPuzzle(pz,onSolved){
+  const saved={ bubble:S.bubble, mascot:S.mascot, bubbleText:S.bubbleText, heartsEl:S.heartsEl, coinEl:S.coinEl, streakEl:S.streakEl, main:S.main, hints:S.hints, cur:S.curPuzzle };
+  const mascot=h('span',{class:'mascot',text:'🤖'}), text=h('span');
+  const bubble=h('div',{class:'bubble tip'},mascot,text);
+  const box=h('div',{class:'main'});
+  S.bubble=bubble; S.mascot=mascot; S.bubbleText=text; S.main=box; S.curPuzzle=pz; S.hints=0;
+  S.heartsEl=h('span',{class:'hearts'}); S.coinEl=h('span',{class:'coinpill'}); S.streakEl=h('span',{class:'streak'});
+  let close=null;
+  const restore=()=>{ clearTimers(); S.onWin=null; Object.assign(S,{ bubble:saved.bubble, mascot:saved.mascot, bubbleText:saved.bubbleText, heartsEl:saved.heartsEl, coinEl:saved.coinEl, streakEl:saved.streakEl, main:saved.main, hints:saved.hints, curPuzzle:saved.cur }); if(close) close(); updateHud(); };
+  S.onWin=()=>{ restore(); onSolved(); };
+  close=modal(h('div',{class:'modal-card left'},
+    h('div',{class:'hud'},h('h2',{style:'margin:0',text:`${pz.emoji} ${pz.name}`}),h('div',{class:'grow'}),S.streakEl,S.heartsEl,S.coinEl,
+      h('button',{class:'btn small',onclick:useHint},`💡 Pista (${HINT_COST} 🪙)`),
+      h('button',{class:'btn small ghost',onclick:restore},'✖ Salir')),
+    pz.story && h('p',{class:'muted'},rich(pz.story)),
+    bubble, box));
+  say(pz.story?'¡Vos podés! Si te trabás, tocá 💡.':'¡Vamos!');
+  TYPES[pz.type](box,pz);
+  updateHud();
+}
+TYPES.escape = (box,L)=>{
+  const solved=L.puzzles.map(()=>false);
+  const notebook=h('div',{class:'row',style:'margin:10px 0 16px'});
+  const scene=h('div',{class:'scene'});
+  const openDoor=()=>{
+    const inp=h('input',{class:'blank door-in',maxlength:12,inputmode:'numeric',placeholder:'····',autocomplete:'off',onkeydown:e=>{ if(e.key==='Enter') go(); }});
+    let close=null;
+    const go=()=>{
+      if(S.finished) return;
+      if(inp.value.replace(/[\s-]/g,'')===L.code){ close(); ok('¡La puerta se abre!'); confetti(30); setTimeout(win,700); }
+      else { bad('Clave incorrecta. Revisá el orden de los números de tu cuaderno.'); inp.select(); }
+    };
+    close=modal(h('div',{class:'modal-card'},h('h2',null,'🚪 La puerta'),h('p',{class:'muted'},'Ingresá los números de tu cuaderno, en orden.'),inp,
+      h('div',{class:'row',style:'justify-content:center;margin-top:14px'},h('button',{class:'btn primary',onclick:go},'🔓 Abrir'),h('button',{class:'btn ghost',onclick:()=>close()},'Cancelar'))));
+    inp.focus();
+  };
+  const draw=()=>{
+    const all=solved.every(Boolean);
+    notebook.replaceChildren(h('b',{text:'📓 Clave de la puerta:'}),...L.puzzles.map((pz,i)=>h('span',{class:'slot'+(solved[i]?' on':''),text:solved[i]?pz.clue:'?'})));
+    scene.replaceChildren(
+      ...L.puzzles.map((pz,i)=>h('button',{class:'obj'+(solved[i]?' done':''),disabled:solved[i],onclick:()=>{
+        if(S.finished) return; sfx.click();
+        openPuzzle(pz,()=>{ solved[i]=true; sfx.coin(); say(`🔎 ¡Pista encontrada en ${pz.name}: el número ${pz.clue}!`,'good'); draw(); });
+      }},h('div',{class:'em',text:solved[i]?'✅':pz.emoji}),h('b',{text:pz.name}),h('small',{class:'muted',text:solved[i]?`Pista: ${pz.clue}`:'Tocá para investigar'}))),
+      h('button',{class:'obj door',disabled:!all,onclick:()=>{ sfx.click(); openDoor(); }},h('div',{class:'em',text:all?'🚪':'🔒'}),h('b',{text:'La puerta'}),h('small',{class:'muted',text:all?'¡Ingresá la clave!':'Resolvé todos los desafíos'})));
+  };
+  box.replaceChildren(h('div',{class:'card room'},h('h2',{text:L.title}),h('p',{class:'muted'},rich(L.story)),notebook,scene));
+  draw();
+  say(L.intro);
 };
 
 /* --- programar --- */
