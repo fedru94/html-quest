@@ -1,0 +1,1420 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HTML Quest</title>
+<style>
+:root{
+  --bg:#12142b; --surface:#1f2447; --surface2:#2a3060; --line:#3a4280; --code:#0b0d20;
+  --text:#eef0ff; --muted:#a9aed8;
+  --gold:#ffd23f; --green:#3ddc84; --red:#ff5c7a; --blue:#4cc9f0; --violet:#9b7bff; --orange:#ff9f43;
+  --radius:14px;
+  --mono:Consolas,"Cascadia Mono","Courier New",monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;min-height:100%}
+body{background:radial-gradient(900px 500px at 85% -10%,#2d337a66,transparent),var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,sans-serif;font-size:17px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{line-height:1.2;margin:0 0 .4em}
+p{margin:0 0 .8em}
+.muted{color:var(--muted)}
+.grow{flex:1}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 20px 60px}
+
+/* top bar */
+.topbar{display:flex;align-items:center;gap:12px;padding:10px 20px;background:#0d0f24;border-bottom:2px solid var(--line);position:sticky;top:0;z-index:20}
+.logo{background:none;border:0;cursor:pointer;font-weight:800;font-size:20px;display:flex;align-items:center;gap:8px;color:var(--text)}
+.logo-mark{background:var(--gold);color:#1b1b1b;border-radius:8px;padding:1px 8px;font-family:var(--mono);font-weight:800}
+.icon-btn{background:var(--surface);border:2px solid var(--line);border-radius:10px;width:40px;height:40px;cursor:pointer;font-size:18px}
+.icon-btn:hover{background:var(--surface2)}
+.pchip{display:flex;align-items:center;gap:10px;background:var(--surface);border:2px solid var(--line);border-radius:999px;padding:4px 14px 4px 6px}
+.pchip .av{font-size:26px;background:var(--surface2);border-radius:50%;width:38px;height:38px;display:grid;place-items:center}
+.pchip .nm{font-weight:700;font-size:15px;line-height:1.1}
+.pchip .rk{font-size:12px;color:var(--muted)}
+.xpbar{width:110px;height:8px;background:#0b0d20;border-radius:6px;overflow:hidden;margin-top:3px}
+.xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--orange))}
+.coinpill{font-weight:700;color:var(--gold)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:2px solid var(--line);background:var(--surface2);color:var(--text);border-radius:12px;padding:10px 18px;font-weight:700;cursor:pointer;box-shadow:0 4px 0 #0b0d20;transition:transform .08s}
+.btn:hover:not(:disabled){transform:translateY(-1px);background:#343b78}
+.btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #0b0d20}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--gold);border-color:#c9a000;color:#1d1a00}
+.btn.primary:hover:not(:disabled){background:#ffdc66}
+.btn.green{background:var(--green);border-color:#22a35c;color:#06240f}
+.btn.ghost{background:transparent;box-shadow:none}
+.btn.small{padding:6px 12px;font-size:15px;border-radius:10px;box-shadow:0 3px 0 #0b0d20}
+.btn.big{padding:14px 26px;font-size:20px}
+.btn.danger{background:#5b2338;border-color:var(--red)}
+
+.card{background:var(--surface);border:2px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+.card h2{font-size:22px}
+
+/* login */
+.login{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+@media(max-width:820px){.login{grid-template-columns:1fr}}
+.hero{text-align:center;padding:24px 10px 10px}
+.hero h1{font-size:46px;margin-bottom:.1em}
+.hero p{font-size:19px;color:var(--muted)}
+.field{display:block;margin-bottom:12px}
+.field span{display:block;font-weight:700;margin-bottom:4px;font-size:15px;color:var(--muted)}
+.field input,.field select{width:100%;background:var(--code);border:2px solid var(--line);border-radius:10px;padding:10px 12px}
+.field input:focus,.field select:focus,.editor:focus{outline:3px solid var(--blue);outline-offset:1px}
+.avatars{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:14px}
+.avatars button{font-size:28px;background:var(--code);border:2px solid var(--line);border-radius:12px;padding:6px;cursor:pointer}
+.avatars button.sel{border-color:var(--gold);background:#3a3410}
+.plist{display:grid;gap:8px;max-height:360px;overflow:auto;margin-top:10px}
+.pitem{display:flex;align-items:center;gap:12px;background:var(--code);border:2px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer;text-align:left;width:100%}
+.pitem:hover{border-color:var(--blue)}
+.pitem .av{font-size:28px}
+.pitem small{color:var(--muted)}
+
+/* map */
+.world{margin-bottom:22px}
+.world-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.world-head h2{font-size:24px;margin:0}
+.path{position:relative;display:flex;gap:10px;overflow-x:auto;padding:10px 4px 6px}
+.path::before{content:"";position:absolute;left:40px;right:40px;top:44px;height:6px;background:var(--line);border-radius:3px}
+.node{position:relative;background:none;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:116px;color:var(--text)}
+.node .bub{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;font-size:28px;font-weight:800;background:var(--surface2);border:4px solid var(--blue);box-shadow:0 5px 0 #0b0d20}
+.node.boss .bub{width:80px;height:80px;border-color:var(--orange);font-size:34px;margin-top:-6px}
+.node.done .bub{background:#1d5a3a;border-color:var(--green)}
+.node.next .bub{animation:pulse 1.4s infinite;border-color:var(--gold)}
+.node.locked{cursor:not-allowed;opacity:.55}
+.node.locked .bub{border-color:var(--line);background:#181b38}
+.node:hover:not(.locked) .bub{transform:scale(1.06)}
+.node .lbl{font-size:14px;font-weight:600;text-align:center;line-height:1.2;max-width:112px}
+.node .stars{font-size:15px;color:var(--gold);letter-spacing:2px;height:20px}
+@keyframes pulse{0%,100%{box-shadow:0 5px 0 #0b0d20,0 0 0 0 #ffd23f88}50%{box-shadow:0 5px 0 #0b0d20,0 0 0 12px #ffd23f00}}
+.future{opacity:.55;border-style:dashed}
+.badges{display:flex;gap:10px;flex-wrap:wrap}
+.badge{width:92px;text-align:center;font-size:13px;line-height:1.2}
+.badge .ic{font-size:34px;display:grid;place-items:center;width:58px;height:58px;margin:0 auto 4px;border-radius:50%;background:var(--surface2);border:3px solid var(--gold)}
+.badge.off .ic{filter:grayscale(1) brightness(.6);border-color:var(--line)}
+.badge.off{color:var(--muted)}
+
+/* lesson */
+.lesson{max-width:820px;margin:0 auto}
+.tag-pill{display:inline-block;background:var(--surface2);border-radius:999px;padding:2px 12px;font-size:14px;font-weight:700;color:var(--blue);margin-bottom:8px}
+.lesson h1{font-size:34px}
+.lesson p{font-size:18px}
+.code{background:var(--code);border:2px solid var(--line);border-radius:12px;padding:12px 16px;font-family:var(--mono);font-size:16px;white-space:pre-wrap;margin:0 0 12px;overflow:auto;line-height:1.55}
+.code .tg{color:var(--blue)}
+.code .cm{color:#7f86b8;font-style:italic}
+code.ic{font-family:var(--mono);background:var(--code);border:1px solid var(--line);border-radius:6px;padding:0 6px;color:var(--blue);font-size:.92em;white-space:nowrap}
+.cap{color:var(--muted);font-size:15px;margin:-4px 0 12px}
+
+/* play */
+.hud{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.hud-title{font-weight:800;font-size:20px}
+.hearts{font-size:20px;letter-spacing:2px}
+.streak{color:var(--orange);font-weight:800}
+.bubble{display:flex;gap:12px;align-items:center;border-radius:var(--radius);padding:10px 16px;margin-bottom:14px;border:2px solid var(--line);background:var(--surface);min-height:58px;font-size:17px}
+.bubble .mascot{font-size:32px}
+.bubble.good{border-color:var(--green);background:#143a2a}
+.bubble.bad{border-color:var(--red);background:#44202f}
+.main{transition:transform .1s}
+.main.shake{animation:shake .35s}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.qhead{color:var(--muted);font-weight:700;font-size:14px;margin-bottom:6px}
+.qtext{font-size:22px;font-weight:700;margin-bottom:14px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.opts{grid-template-columns:1fr}}
+.opt{background:var(--surface2);border:3px solid var(--line);border-radius:12px;padding:14px 16px;text-align:left;cursor:pointer;font-size:18px;box-shadow:0 4px 0 #0b0d20}
+.opt:hover:not(:disabled){border-color:var(--blue)}
+.opt.right{background:#1d5a3a;border-color:var(--green)}
+.opt.wrong{background:#5b2338;border-color:var(--red);opacity:.7}
+.opt:disabled{cursor:default}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.split{grid-template-columns:1fr}}
+.pool,.build{display:flex;flex-direction:column;gap:8px}
+.pool{flex-direction:row;flex-wrap:wrap}
+.build{background:var(--code);border:2px dashed var(--line);border-radius:12px;padding:10px;min-height:120px}
+.blk{background:var(--surface2);border:2px solid var(--line);border-radius:10px;padding:7px 12px;font-family:var(--mono);font-size:15px;cursor:pointer;color:var(--text);text-align:left;box-shadow:0 3px 0 #0b0d20}
+.blk:hover{border-color:var(--blue)}
+.blk.placed{display:flex;gap:10px;align-items:center;box-shadow:none;width:100%}
+.blk.placed .ln{color:var(--muted);width:20px;text-align:right}
+.blk.good{border-color:var(--green);background:#1d5a3a}
+.blk.badpos{border-color:var(--red);background:#5b2338}
+.blk .tg{color:var(--blue)}
+.blank{font-family:var(--mono);font-size:16px;background:#2b2f66;border:2px solid var(--violet);border-radius:6px;color:var(--gold);padding:1px 4px;text-align:center}
+.blank.right{border-color:var(--green);color:var(--green);background:#143a2a}
+.blank.wrong{border-color:var(--red);background:#44202f}
+.bank{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px;align-items:center}
+.bank .blk{padding:4px 12px}
+.lines{background:var(--code);border:2px solid var(--line);border-radius:12px;padding:6px;margin-bottom:12px}
+.line{display:block;width:100%;text-align:left;background:none;border:2px solid transparent;border-radius:8px;padding:4px 10px;cursor:pointer;font-family:var(--mono);font-size:16px;white-space:pre;color:var(--text)}
+.line:hover{background:#262b5c}
+.line .ln{display:inline-block;width:2.2em;color:var(--muted);user-select:none}
+.line .tg{color:var(--blue)}
+.line.caught{background:#143a2a;border-color:var(--green);cursor:default}
+.line.miss{background:#44202f;border-color:var(--red)}
+.line .why{white-space:normal;font-family:"Segoe UI",system-ui,sans-serif;color:#bff5d6;font-size:15px;padding:2px 0 4px 2.2em}
+.timebar{height:12px;background:var(--code);border-radius:8px;overflow:hidden;margin-bottom:10px;border:2px solid var(--line)}
+.timebar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--red),var(--orange));transition:width .25s linear}
+.editor{width:100%;height:330px;resize:vertical;background:var(--code);border:2px solid var(--line);border-radius:12px;padding:12px;font-family:var(--mono);font-size:16px;line-height:1.5;tab-size:2;color:var(--text)}
+.goals{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px}
+.goals li{background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:6px 12px;display:flex;gap:10px;align-items:center;font-size:16px}
+.goals li.done{border-color:var(--green);background:#143a2a}
+.lint{background:#3d2f12;border:2px solid var(--orange);border-radius:10px;padding:6px 12px;font-size:15px;margin-top:8px}
+.lint p{margin:2px 0}
+.browser{background:#fff;border-radius:12px;overflow:hidden;border:2px solid var(--line);display:flex;flex-direction:column;height:100%;min-height:260px}
+.browser .bar{background:#dfe3ee;display:flex;align-items:center;gap:12px;padding:6px 10px;color:#333}
+.browser .dots{color:#aab;letter-spacing:2px;font-size:12px}
+.browser .tab{background:#fff;border-radius:8px 8px 0 0;padding:3px 12px;font-size:14px;max-width:70%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.browser iframe{flex:1;border:0;width:100%;min-height:230px;background:#fff}
+.pvlabel{font-weight:700;color:var(--muted);font-size:14px;margin-bottom:4px}
+
+/* ranking */
+.podium{display:flex;gap:12px;justify-content:center;align-items:flex-end;flex-wrap:wrap}
+.pod{flex:1;min-width:150px;max-width:230px;text-align:center;background:var(--surface2);border:3px solid var(--line);border-radius:var(--radius);padding:12px 8px}
+.pod1{order:2;padding-top:22px;padding-bottom:22px;border-color:var(--gold)}
+.pod2{order:1;border-color:#c0c8e0}.pod3{order:3;border-color:#d08a52}
+.pod.me,tr.me{outline:3px solid var(--blue);background:#1a3552}
+.pod .medal{font-size:30px}.pod .pav{font-size:44px;line-height:1.2}
+tr.me td{font-weight:700}
+
+/* result */
+.result{text-align:center;max-width:640px;margin:20px auto}
+.result h1{font-size:40px}
+.bigstars{font-size:56px;color:var(--gold);letter-spacing:6px}
+.bigstars span{display:inline-block;animation:pop .5s both}
+.bigstars span:nth-child(2){animation-delay:.2s}.bigstars span:nth-child(3){animation-delay:.4s}
+@keyframes pop{from{transform:scale(0) rotate(-90deg);opacity:0}to{transform:scale(1)}}
+.gains{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.gain{background:var(--surface);border:2px solid var(--gold);border-radius:12px;padding:8px 18px;font-weight:800;font-size:20px;color:var(--gold)}
+.banner{background:#3a3410;border:2px solid var(--gold);border-radius:12px;padding:10px 14px;margin:10px 0;font-weight:700}
+.recap{text-align:left}
+
+/* modal / toast / confetti */
+.overlay{position:fixed;inset:0;background:#05061488;z-index:60;display:grid;place-items:center;padding:16px}
+.modal-card{background:var(--surface);border:3px solid var(--line);border-radius:16px;padding:22px 26px;max-width:min(920px,100%);max-height:90vh;overflow:auto;text-align:center}
+.modal-card.left{text-align:left}
+.toasts{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:70;display:grid;gap:8px}
+.toast{background:#0d0f24;border:2px solid var(--gold);border-radius:12px;padding:8px 16px;font-weight:700}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:55}
+.confetti i{position:absolute;top:-16px;width:10px;height:15px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+
+/* teacher */
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left}
+th{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.04em;cursor:default}
+.tablewrap{overflow:auto;max-height:60vh;background:var(--surface);border:2px solid var(--line);border-radius:12px}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<noscript>Necesitás activar JavaScript para jugar HTML Quest.</noscript>
+
+<script>
+'use strict';
+/* ============================================================
+   HTML Quest — juego para aprender HTML básico (1er año)
+   Un solo archivo, sin conexión. El progreso se guarda en el
+   navegador de cada PC (localStorage) y se puede exportar.
+   ============================================================ */
+const KEY = 'htmlquest_v1';
+const MUTE_KEY = 'htmlquest_mute';
+const TEACHER_PIN = 'docente';           // cambiar acá la clave del panel docente (es solo una comodidad, no seguridad)
+const HINT_COST = 5;
+const RANKING_URL = 'https://script.google.com/macros/s/AKfycbyS-bQ6dd5KLNEVND_Gr0zekQoINalPEofN0g7TWSX0fxTTN_lySqDxPSGQ6mFtXOKrGg/exec';                 // ← pegar acá la URL de la “aplicación web” de Google Apps Script (ver ranking-apps-script.gs)
+const AVATARS = ['🦊','🐼','🐯','🐸','🦄','🐙','🦖','🐧','🤖','👾','🚀','🐲'];
+const RANKS = ['Aprendiz','Curioso del código','Constructor novato','Constructor web','Arquitecto HTML','Maestro HTML','Leyenda del código'];
+const VOID = new Set(['br','hr','img','meta','link','input']);
+const KNOWN = new Set('html head body title meta link style script h1 h2 h3 h4 h5 h6 p br hr strong em b i u div span a img ul ol li table tr td th thead tbody button form input label section header footer nav main article small mark'.split(' '));
+const PRAISE = ['¡Bien ahí, crack!','¡Eso es!','¡Qué máquina!','¡Perfecto!','¡Código limpio!','¡Sos un crack del HTML!','¡Excelente!'];
+
+/* ---------- utilidades ---------- */
+function h(tag, attrs, ...kids){
+  if(attrs==null || typeof attrs!=='object' || attrs.nodeType || Array.isArray(attrs)){ kids.unshift(attrs); attrs=null; }
+  const el = document.createElement(tag);
+  for(const k in (attrs||{})){
+    const v = attrs[k];
+    if(v==null || v===false) continue;
+    if(k==='class') el.className = v;
+    else if(k==='text') el.textContent = v;
+    else if(k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v===true ? '' : v);
+  }
+  for(const c of kids.flat(Infinity)){
+    if(c==null || c===false) continue;
+    el.append(c.nodeType ? c : document.createTextNode(String(c)));
+  }
+  return el;
+}
+const rich = s => String(s).split(/(`[^`]+`|\*\*[^*]+\*\*)/).filter(Boolean).map(t =>
+  t[0]==='`' ? h('code',{class:'ic',text:t.slice(1,-1)}) : t.startsWith('**') ? h('strong',{text:t.slice(2,-2)}) : t);
+const hl = s => String(s).split(/(<!--[\s\S]*?-->|<\/?[a-zA-Z!][^>]*>)/).filter(Boolean).map(t =>
+  t.startsWith('<!--') ? h('span',{class:'cm',text:t}) :
+  (/^<[\/a-zA-Z!]/.test(t) && t.endsWith('>')) ? h('span',{class:'tg',text:t}) : t);
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+const slug = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const pid = (name,curso) => slug(curso)+'__'+slug(name);
+const pick = a => a[Math.floor(Math.random()*a.length)];
+function download(name, text, type){
+  const url = URL.createObjectURL(new Blob([text],{type}));
+  const a = h('a',{href:url,download:name}); document.body.append(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+
+/* ---------- sonido, avisos, confeti ---------- */
+let muted = false; try{ muted = localStorage.getItem(MUTE_KEY)==='1'; }catch(e){}
+let actx = null;
+function tone(f,d,type='square',vol=.05,delay=0){
+  if(muted) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(), g=actx.createGain(); o.type=type; o.frequency.value=f;
+    o.connect(g); g.connect(actx.destination);
+    const t=actx.currentTime+delay; g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.start(t); o.stop(t+d);
+  }catch(e){}
+}
+const sfx = {
+  ok(){ tone(660,.1); tone(880,.15,'square',.05,.1); },
+  bad(){ tone(190,.28,'sawtooth',.06); },
+  win(){ [523,659,784,1047].forEach((f,i)=>tone(f,.22,'square',.05,i*.12)); },
+  click(){ tone(440,.05,'triangle',.04); },
+  coin(){ tone(988,.08); tone(1319,.2,'square',.04,.08); }
+};
+function toast(msg){
+  let box=document.querySelector('.toasts'); if(!box){ box=h('div',{class:'toasts'}); document.body.append(box); }
+  const t=h('div',{class:'toast',text:msg}); box.append(t); setTimeout(()=>t.remove(),2800);
+}
+function confetti(n=46){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cols=['#ffd23f','#3ddc84','#ff5c7a','#4cc9f0','#9b7bff','#ff9f43'];
+  const box=h('div',{class:'confetti'});
+  for(let i=0;i<n;i++) box.append(h('i',{style:`left:${Math.random()*100}%;background:${cols[i%cols.length]};animation-delay:${Math.random()*.6}s;animation-duration:${1.6+Math.random()*1.4}s`}));
+  document.body.append(box); setTimeout(()=>box.remove(),3600);
+}
+function modal(content){
+  const ov=h('div',{class:'overlay'}, content); document.body.append(ov);
+  return ()=>ov.remove();
+}
+
+/* ---------- linter de etiquetas (mensajes amigables) ---------- */
+function lint(code){
+  const out=[], stack=[];
+  const re=/<!--[\s\S]*?-->|<!doctype[^>]*>|<(\/?)([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/gi;
+  let m;
+  while((m=re.exec(code))){
+    if(!m[2]) continue;
+    const close=m[1]==='/', name=m[2].toLowerCase();
+    if(!KNOWN.has(name)){ out.push(`No conozco la etiqueta <${name}>. ¿Está bien escrita?`); continue; }
+    if(VOID.has(name)){ if(close) out.push(`<${name}> no se cierra: ya viene cerrada sola.`); continue; }
+    if(!close){ stack.push(name); continue; }
+    const top=stack[stack.length-1];
+    if(top===name) stack.pop();
+    else if(stack.includes(name)){ out.push(`Cerraste </${name}> pero antes quedó abierta <${top}> sin cerrar.`); while(stack.pop()!==name); }
+    else out.push(`Hay un </${name}> que no tiene su <${name}> de apertura.`);
+  }
+  stack.reverse().forEach(n=>out.push(`Te falta cerrar <${n}> con </${n}>.`));
+  return out;
+}
+function indentLines(lines){
+  let d=0;
+  return lines.map(l=>{
+    const t=l.trim();
+    if(/^<\//.test(t)) d=Math.max(0,d-1);
+    const cur=d;
+    const m=t.match(/^<([a-z][a-z0-9]*)(\s[^>]*)?>$/i);
+    if(m && !VOID.has(m[1].toLowerCase())) d++;
+    return cur;
+  });
+}
+
+/* ============================================================
+   CONTENIDO: mundos y misiones
+   ============================================================ */
+const SKELETON = `<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mi primera web</title>
+  </head>
+  <body>
+    Hola, mundo
+  </body>
+</html>`;
+
+const has = (code,re) => re.test(code);
+const textOf = el => el ? el.textContent.trim() : '';
+const WORLDS = [
+ { id:1, name:'El esqueleto', icon:'🦴', desc:'Toda página web tiene la misma estructura. ¡Aprendela y ya sos constructor!',
+  levels:[
+   { id:'1.1', title:'¿Qué es HTML?', short:'¿Qué es HTML?', type:'quiz', xp:30,
+     lesson:{ text:[
+       "HTML es el lenguaje con el que se arman las páginas web. Es un lenguaje de **marcado**: le ponés *etiquetas* al contenido para decirle al navegador qué es cada cosa (un título, un párrafo, una imagen…).",
+       "Una etiqueta se escribe entre `<` y `>`. Casi todas se **abren** y se **cierran**. La de cierre lleva una barra `/`." ],
+       code:'<p>Hola, soy un párrafo</p>', cap:"`<p>` abre, el texto es el contenido y `</p>` cierra." },
+     questions:[
+       { q:"¿Para qué sirve HTML?", opts:["Para darle estructura y contenido a una página web","Para editar fotos","Para jugar online","Para escribir en Word"], a:0, why:"¡Eso es! HTML es el esqueleto de la web." },
+       { q:"¿Cómo se escribe la etiqueta que ABRE un párrafo?", opts:["`<p>`","`</p>`","`p`","`(p)`"], a:0, why:"Las etiquetas van entre `<` y `>`." },
+       { q:"¿Y la etiqueta que CIERRA un párrafo?", opts:["`</p>`","`<p>`","`<\\p>`","`<p/>`"], a:0, why:"La barra va ADELANTE del nombre: `</p>`." },
+       { q:"¿Quién lee el HTML y lo convierte en la página que vemos?", opts:["El navegador (Chrome, Edge…)","El teclado","La impresora","El parlante"], a:0, why:"El navegador interpreta las etiquetas y dibuja la página." }
+     ],
+     hint:"Pensá: HTML son etiquetas entre `<` y `>`. Las de cierre llevan una barra.",
+     recap:"HTML se escribe con etiquetas entre `<` y `>`; casi todas se abren y se cierran con `/`." },
+
+   { id:'1.2', title:'Armá el esqueleto', short:'Armá el esqueleto', type:'order', xp:30,
+     lesson:{ text:[
+       "Toda página tiene la misma estructura básica, como un cuerpo tiene esqueleto:",
+       "• `<!DOCTYPE html>` le avisa al navegador que esto es HTML.  • `<html>` envuelve **toda** la página.  • `<head>` (cabeza) guarda información que no se ve en la página, como el `<title>` de la pestaña.  • `<body>` (cuerpo) guarda **todo lo que sí se ve**." ],
+       code:SKELETON, cap:"Fijate cómo cada etiqueta que se abre se cierra, y cómo quedan “adentro” de otras." },
+     blocks:['<!DOCTYPE html>','<html>','<head>','<title>Mi web</title>','</head>','<body>','</body>','</html>'],
+     hint:"Empezá por `<!DOCTYPE html>`. `</html>` es lo último de todo. La cabeza (`head`) va antes que el cuerpo (`body`).",
+     recap:"Orden del esqueleto: DOCTYPE → html → head (con title) → body → cierres." },
+
+   { id:'1.3', title:'Completá los huecos', short:'Completá los huecos', type:'fill', xp:30,
+     lesson:{ text:["Ahora te toca escribir. Completá los espacios con el **nombre** de la etiqueta (sin los símbolos `<` `>`). Si te trabás, usá el banco de palabras."],
+       code:null },
+     code:`<!DOCTYPE html>
+<{{html}}>
+  <{{head}}>
+    <{{title}}>Mi primera web</{{title}}>
+  </{{head}}>
+  <{{body}}>
+    <!-- acá va lo que se ve -->
+    Hola, mundo
+  </{{body}}>
+</{{html}}>`,
+     bank:['html','head','title','body'],
+     hint:"Lo que envuelve todo es `html`. Lo que se ve va en el `body`. El nombre de la pestaña va en el `title`.",
+     recap:"`head` guarda info (como el título); `body` guarda lo que se ve; `html` envuelve todo." },
+
+   { id:'1.4', title:'Esqueleto con bichos', short:'Cazá los bichos', type:'bugs', xp:30,
+     lesson:{ text:["¡Alerta! A este esqueleto se le colaron **3 bichos** (errores de tipeo o cierres mal puestos). Tocá las líneas que tienen un error para atraparlos. Ojo: si tocás una línea que está bien, perdés una vida."], code:null },
+     codeLines:[`<!DOCTYPE html>`,`<html>`,`  <haed>`,`    <title>Mi blog<title>`,`  </head>`,`  <body>`,`    Hola gente`,`  </bodi>`,`</html>`],
+     bugs:[2,3,7],
+     explain:{2:"`<haed>` está mal escrita: es `<head>`.",3:"El título no se cerró: al final tiene que ser `</title>` (con barra).",7:"`</bodi>` está mal escrita: es `</body>`."},
+     hint:"Fijate letra por letra los nombres de las etiquetas, y que cada cierre lleve `/`.",
+     recap:"Los errores más comunes: etiquetas mal escritas y cierres sin la `/`." },
+
+   { id:'1.5', title:'¿Cabeza o cuerpo?', short:'Cabeza o cuerpo', type:'quiz', xp:30, hearts:4,
+     lesson:{ text:["Repaso rápido: ¿qué va en el `<head>` y qué va en el `<body>`? Respondé las preguntas sin mirar el código."], code:null },
+     questions:[
+       { q:"El texto “Hola a todos” tiene que verse en la página. ¿Dónde lo escribís?", opts:["Dentro de `<body>`","Dentro de `<head>`","Dentro de `<title>`","Antes de `<!DOCTYPE html>`"], a:0, why:"Todo lo visible va en el `<body>`." },
+       { q:"¿Qué etiqueta define el nombre que aparece en la pestaña del navegador?", opts:["`<title>`","`<body>`","`<html>`","`<p>`"], a:0, why:"El `<title>` va dentro del `<head>` y se ve en la pestaña." },
+       { q:"¿Qué etiqueta envuelve TODA la página?", opts:["`<html>`","`<title>`","`<head>`","`<p>`"], a:0, why:"`<html>` abre al principio y cierra al final." },
+       { q:"¿Qué línea va siempre primera?", opts:["`<!DOCTYPE html>`","`<body>`","`</html>`","`<title>`"], a:0, why:"El DOCTYPE le avisa al navegador que es HTML moderno." },
+       { q:"Si `<head>` es la cabeza, ¿qué es `<body>`?", opts:["El cuerpo: lo que se ve en la página","Un botón","El título","Un error"], a:0, why:"¡Cabeza y cuerpo! Lo que se ve está en el cuerpo." }
+     ],
+     hint:"Lo que se VE → `body`. Lo que NO se ve en la página (pero sí en la pestaña) → `head`.",
+     recap:"`head` = información; `body` = contenido visible; `html` = envoltorio." },
+
+   { id:'1.6', title:'Jefe: el Guardián del Esqueleto', short:'👑 Jefe', type:'code', xp:60, boss:true, noHearts:true,
+     lesson:{ text:["¡Llegó el jefe! Escribí **vos solo** el esqueleto completo de una página, de memoria. Vas a ver el resultado a la derecha, y la lista de objetivos se va tildando sola.",
+       "Tip: la tecla Tab escribe espacios para ordenar tu código (con las flechas o el mouse salís del cuadro)."], code:null },
+     placeholder:"Escribí acá tu esqueleto HTML…",
+     starter:'',
+     rules:[
+       { label:"Empieza con `<!DOCTYPE html>`", ok:c=>has(c,/^\s*(<!--[\s\S]*?-->\s*)*<!doctype html>/i) },
+       { label:"Tiene `<html>` y `</html>`", ok:c=>has(c,/<html[\s>]/i)&&has(c,/<\/html>/i) },
+       { label:"Tiene un `<head>` con un `<title>` que diga algo", ok:(c,d)=>has(c,/<head[\s>][\s\S]*<title[\s>][\s\S]*<\/title>[\s\S]*<\/head>/i)&&!!textOf(d.querySelector('head title')) },
+       { label:"Tiene un `<body>` con un texto adentro", ok:(c,d)=>has(c,/<body[\s>]/i)&&has(c,/<\/body>/i)&&textOf(d.body).length>0 },
+       { label:"El `<head>` va antes que el `<body>`", ok:c=>{const a=c.search(/<head[\s>]/i),b=c.search(/<body[\s>]/i);return a>=0&&b>=0&&a<b;} }
+     ],
+     hint:["Empezá con `<!DOCTYPE html>` y abrí `<html>`.","Adentro de `<html>` van dos cosas: `<head>` (con un `<title>`) y `<body>` (con tu texto).","Cerrá todo al final, de adentro hacia afuera: `</body>` y después `</html>`."],
+     recap:"¡Ya sabés armar el esqueleto de memoria! Todas las páginas del mundo empiezan así." }
+  ]},
+
+ { id:2, name:'Texto con onda', icon:'✍️', desc:'Títulos, párrafos, negritas y cursivas: dale vida al contenido.',
+  levels:[
+   { id:'2.1', title:'Títulos', short:'Títulos', type:'code', xp:30, noHearts:true,
+     lesson:{ text:["Los títulos se hacen con `<h1>` hasta `<h6>` (la h viene de *heading*, encabezado). `<h1>` es el más importante y grande; `<h6>` es el más chiquito. Lo normal es usar un solo `<h1>` por página."],
+       code:`<h1>Título principal</h1>\n<h2>Subtítulo</h2>\n<h3>Subtítulo más chico</h3>`, cap:"Probalo vos en la misión de abajo." },
+     placeholder:"Escribí tus títulos acá…", starter:'',
+     rules:[
+       { label:"Un `<h1>` con el nombre de tu juego favorito", ok:(c,d)=>!!textOf(d.querySelector('h1')) },
+       { label:"Después, un `<h2>` con un subtítulo", ok:(c,d)=>{const a=d.querySelector('h1'),b=d.querySelector('h2');return !!textOf(b)&&!!a&&!!(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING);} },
+       { label:"Y por último un `<h3>` con texto", ok:(c,d)=>!!textOf(d.querySelector('h3')) }
+     ],
+     hint:["Ejemplo: `<h1>Minecraft</h1>`. Escribí la apertura, el texto y el cierre.","Cada título se abre y se cierra con su número: `<h2>`…`</h2>`."],
+     recap:"`<h1>` es el título principal; `<h2>` a `<h6>` son cada vez menos importantes." },
+
+   { id:'2.2', title:'Párrafos', short:'Párrafos', type:'code', xp:30, noHearts:true,
+     lesson:{ text:["Para escribir texto normal se usa `<p>` (*paragraph*, párrafo). Cada `<p>` es un bloque separado.",
+       "Curiosidad: el navegador **ignora los Enter** que pongas dentro de un párrafo. Probalo en la misión y mirá la vista previa."],
+       code:`<p>Esto es un párrafo.</p>\n<p>Y este es otro.</p>` },
+     placeholder:"Escribí tus párrafos acá…", starter:`<h1>Mi juego favorito</h1>\n`,
+     rules:[
+       { label:"Mantené el `<h1>` con un título", ok:(c,d)=>!!textOf(d.querySelector('h1')) },
+       { label:"Escribí al menos 2 párrafos `<p>` con texto", ok:(c,d)=>[...d.querySelectorAll('p')].filter(p=>textOf(p)).length>=2 },
+       { label:"Los párrafos van DESPUÉS del título", ok:(c,d)=>{const a=d.querySelector('h1'),b=d.querySelector('p');return !!a&&!!b&&!!(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING);} }
+     ],
+     hint:["`<p>Mi texto</p>` — y repetilo para el segundo párrafo.","Contá por qué te gusta el juego, una idea en cada `<p>`."],
+     recap:"`<p>` es para el texto común, y cada uno se cierra con `</p>`." },
+
+   { id:'2.3', title:'Armá el cartel', short:'Armá el cartel', type:'order', xp:30,
+     lesson:{ text:["Mirá cómo tiene que quedar la página (a la derecha) y ordená las líneas de código para lograrlo."], code:null },
+     blocks:['<h1>Reglas del laboratorio</h1>','<h2>Antes de empezar</h2>','<p>Lavate las manos.</p>','<h2>Durante la clase</h2>','<p>Cuidá las <strong>computadoras</strong>.</p>'],
+     target:`<h1>Reglas del laboratorio</h1>\n<h2>Antes de empezar</h2>\n<p>Lavate las manos.</p>\n<h2>Durante la clase</h2>\n<p>Cuidá las <strong>computadoras</strong>.</p>`,
+     hint:"Primero el título grande (`h1`). Cada subtítulo (`h2`) va seguido de su párrafo.",
+     recap:"El orden del código es el orden en que aparece en la página." },
+
+   { id:'2.4', title:'Negrita, cursiva y saltos', short:'Negrita y cursiva', type:'fill', xp:30,
+     lesson:{ text:["`<strong>` pone el texto en **negrita** (importante). `<em>` lo pone en *cursiva* (énfasis). `<br>` hace un **salto de línea** y es especial: no lleva cierre porque no tiene contenido."],
+       code:`<p>Soy <strong>muy</strong> veloz.</p>\n<p>Primera línea<br>Segunda línea</p>` },
+     code:`<!-- Poné "muy" en NEGRITA -->
+<p>Mi perro es <{{strong|b}}>muy</{{strong|b}}> rápido.</p>
+
+<!-- Poné "favorito" en CURSIVA -->
+<p>Mi juego <{{em|i}}>favorito</{{em|i}}> es Minecraft.</p>
+
+<!-- Cortá la línea en dos con un salto -->
+<p>Primera línea<{{br}}>Segunda línea</p>`,
+     bank:['strong','em','br','p'],
+     hint:"Negrita = `strong`, cursiva = `em`, salto de línea = `br`.",
+     recap:"`strong` = negrita, `em` = cursiva, `br` = salto de línea (sin cierre)." },
+
+   { id:'2.5', title:'Cazabichos contrarreloj', short:'Cazabichos ⏱', type:'bugs', xp:30, time:60, hearts:4,
+     lesson:{ text:["¡Cazabichos contrarreloj! Hay **4 bichos** escondidos en este código. Tenés **60 segundos**. Si se acaba el tiempo o tocás una línea sana, perdés una vida."], code:null },
+     codeLines:[`<h1>Mi mascota</h1>`,`<p>Se llama Toby.</p>`,`<h2>Sus gustos</h3>`,`<p>Le gusta <strong>correr</strong>.</p>`,`<p>Es muy <em>travieso</p></em>`,`<pr>Tiene 3 años.</pr>`,`<p>Duerme todo el día.</p>`,`<h2>Foto</h2>`,`<p>Todavía no tengo foto.<p>`,`<br>`],
+     bugs:[2,4,5,8],
+     explain:{2:"Se abrió `<h2>` pero se cerró con `</h3>`: tienen que coincidir.",4:"Mal anidado: primero se cierra lo último que se abrió (`</em>` y después `</p>`).",5:"`<pr>` no existe: es `<p>`.",8:"El cierre está mal: tiene que ser `</p>` con barra."},
+     hint:"Buscá: títulos que no coinciden, etiquetas cruzadas, nombres inventados y cierres sin barra.",
+     recap:"Abrir y cerrar con el mismo nombre, y cerrar en el orden inverso al que abriste." },
+
+   { id:'2.6', title:'¿Qué etiqueta uso?', short:'¿Qué etiqueta?', type:'quiz', xp:30, hearts:4,
+     lesson:{ text:["Pequeño examen de todo lo del Mundo 2. ¡Vos podés!"], code:null },
+     questions:[
+       { q:"Querés el título MÁS importante de la página. ¿Cuál usás?", opts:["`<h1>`","`<h6>`","`<p>`","`<br>`"], a:0, why:"`<h1>` es el título principal." },
+       { q:"¿Qué etiqueta usás para escribir un párrafo?", opts:["`<p>`","`<h1>`","`<br>`","`<title>`"], a:0, why:"`<p>` de *paragraph*." },
+       { q:"¿Cuál de estas NO necesita etiqueta de cierre?", opts:["`<br>`","`<p>`","`<h2>`","`<strong>`"], a:0, why:"`<br>` es una etiqueta vacía: se escribe sola." },
+       { q:"Escribiste “Hola” y “Chau” en dos renglones dentro del mismo `<p>`, pero se ven en la misma línea. ¿Qué falta?", opts:["Un `<br>` entre las dos palabras","Un `<h1>`","Cerrar el `<body>`","Nada, es un error del navegador"], a:0, why:"El navegador ignora los Enter: hay que usar `<br>`." },
+       { q:"`<strong>Ojo</strong>` hace que la palabra “Ojo” se vea…", opts:["En negrita","En cursiva","Más chiquita","Invisible"], a:0, why:"`strong` = negrita (¡importante!)." }
+     ],
+     hint:"Repasá: `h1` título, `p` párrafo, `br` salto, `strong` negrita, `em` cursiva.",
+     recap:"Ya conocés las etiquetas de texto más usadas de HTML." },
+
+   { id:'2.7', title:'Jefe: Mi perfil gamer', short:'👑 Jefe final', type:'code', xp:60, boss:true, noHearts:true,
+     lesson:{ text:["¡Jefe del Mundo 2! Creá la página **“Mi perfil gamer”** usando todo lo aprendido. Te dejo el esqueleto armado. Completá la lista de objetivos y escribí lo que quieras: es tu página."], code:null },
+     placeholder:'', starter:`<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+  </head>
+  <body>
+
+  </body>
+</html>`,
+     rules:[
+       { label:"El `<title>` dice algo (mirá la pestaña de la vista previa)", ok:(c,d)=>!!textOf(d.querySelector('head title')) },
+       { label:"Un `<h1>` con tu nombre o apodo", ok:(c,d)=>!!textOf(d.body.querySelector('h1')) },
+       { label:"Al menos un `<h2>` con texto", ok:(c,d)=>!!textOf(d.body.querySelector('h2')) },
+       { label:"Al menos 2 párrafos `<p>` con texto", ok:(c,d)=>[...d.body.querySelectorAll('p')].filter(p=>textOf(p)).length>=2 },
+       { label:"Una palabra en negrita `<strong>` dentro de un párrafo", ok:(c,d)=>!!textOf(d.body.querySelector('p strong')) },
+       { label:"Una palabra en cursiva `<em>`", ok:(c,d)=>!!textOf(d.body.querySelector('em')) },
+       { label:"Un salto de línea `<br>`", ok:(c,d)=>!!d.body.querySelector('br') }
+     ],
+     hint:["Poné tu apodo en el `<title>` y en un `<h1>` dentro del `<body>`.","Un `<h2>` puede ser “Mis juegos favoritos” o “Sobre mí”.","Escribí `<p>Mi juego es <strong>Fortnite</strong></p>` y cambialo por el tuyo."],
+     recap:"¡Creaste una página completa desde cero! Eso es lo que hacen los desarrolladores web." }
+  ]}
+];
+
+/* ---------- ayudas para los mundos 3, 4 y 5 ---------- */
+const SKEL_BLANK = `<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+  </head>
+  <body>
+
+  </body>
+</html>`;
+// Las “imágenes de la carpeta”: en la vista previa, estos nombres de archivo se reemplazan por dibujos incluidos en el juego.
+const mkImg = (emoji,bg) => 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="300" height="200" rx="16" fill="${bg}"/><text x="150" y="130" font-size="100" text-anchor="middle">${emoji}</text></svg>`);
+const IMGS = { 'gato.png':mkImg('🐱','#ffd9a8'), 'perro.png':mkImg('🐶','#d6e4ff'), 'paisaje.jpg':mkImg('🏞️','#c8f0d0'), 'pizza.jpg':mkImg('🍕','#ffe0b2'),
+  'pelota.png':mkImg('⚽','#e4e4e4'), 'robot.png':mkImg('🤖','#e1d5ff'), 'escuela.jpg':mkImg('🏫','#fff3b0'), 'logo.png':mkImg('🌟','#2a3060') };
+const validImg = el => !!IMGS[(el.getAttribute('src')||'').trim().toLowerCase()];
+const hasAlt = el => (el.getAttribute('alt')||'').trim().length>0;
+const goodImgs = d => [...d.body.querySelectorAll('img')].filter(i=>validImg(i)&&hasAlt(i));
+const links = d => [...d.body.querySelectorAll('a[href]')].filter(a=>textOf(a)&&/^https?:\/\/\S+\.\S+/i.test(a.getAttribute('href').trim()));
+const liCount = (d,sel) => [...d.body.querySelectorAll(sel+' > li')].filter(li=>textOf(li)).length;
+const filesNote = () => h('p',{class:'cap'},'🖼️ Imágenes en tu carpeta: ',Object.keys(IMGS).map(n=>[h('code',{class:'ic',text:n}),' ']));
+
+WORLDS.push(
+ { id:3, name:'Listas y enlaces', icon:'🔗', desc:'Ordená la información con listas y conectá páginas con enlaces.',
+  levels:[
+   { id:'3.1', title:'Lista con viñetas', short:'Lista con viñetas', type:'code', xp:30, noHearts:true,
+     lesson:{ text:["Las listas sirven para ordenar información. `<ul>` (*unordered list*, lista sin orden) hace una lista con **viñetas**. Cada elemento va dentro de un `<li>` (*list item*).",
+       "Regla de oro: los `<li>` siempre van **adentro** de un `<ul>`."],
+       code:`<ul>\n  <li>Cuaderno</li>\n  <li>Lapicera</li>\n  <li>Carpeta</li>\n</ul>`, cap:"Fijate cómo los `<li>` quedan “adentro” del `<ul>`." },
+     placeholder:'', starter:`<h2>Mi mochila</h2>\n`,
+     rules:[
+       { label:"Mantené el `<h2>` con un texto", ok:(c,d)=>!!textOf(d.querySelector('h2')) },
+       { label:"Un `<ul>` con al menos 3 `<li>` con texto adentro", ok:(c,d)=>liCount(d,'ul')>=3 }
+     ],
+     hint:["Abrí con `<ul>`, escribí tres `<li>…</li>` y cerrá con `</ul>`.","Ejemplo de un elemento: `<li>Cuaderno</li>`."],
+     recap:"`<ul>` crea la lista con viñetas y cada elemento va en un `<li>`." },
+
+   { id:'3.2', title:'Lista numerada', short:'Lista numerada', type:'order', xp:30,
+     lesson:{ text:["`<ol>` (*ordered list*, lista ordenada) funciona igual que `<ul>`, pero **numera** solo los elementos. Es ideal para pasos, rankings o instrucciones donde el orden importa.",
+       "Mirá cómo debe quedar y armá el código en el orden correcto."], code:null },
+     blocks:['<h2>Receta de pochoclos</h2>','<ol>','<li>Poné el maíz en la olla.</li>','<li>Calentala con tapa.</li>','<li>Esperá que dejen de explotar.</li>','</ol>'],
+     target:`<h2>Receta de pochoclos</h2>\n<ol>\n<li>Poné el maíz en la olla.</li>\n<li>Calentala con tapa.</li>\n<li>Esperá que dejen de explotar.</li>\n</ol>`,
+     hint:"Primero el título, después `<ol>` abre, los pasos en orden lógico, y `</ol>` cierra al final.",
+     recap:"`<ol>` numera automáticamente; el orden de los `<li>` es el orden de los pasos." },
+
+   { id:'3.3', title:'Completá las listas', short:'Completá las listas', type:'fill', xp:30,
+     lesson:{ text:["Completá los espacios con `ul`, `ol` o `li`. Pensá: ¿viñetas o números?"], code:null },
+     code:`<h2>Mi mochila (sin orden)</h2>
+<{{ul}}>
+  <{{li}}>Cuaderno</{{li}}>
+  <{{li}}>Carpeta</{{li}}>
+</{{ul}}>
+
+<h2>Top 3 de mis juegos (con orden)</h2>
+<{{ol}}>
+  <li>Minecraft</li>
+  <li>Fortnite</li>
+  <li>Roblox</li>
+</{{ol}}>`,
+     bank:['ul','ol','li'],
+     hint:"Sin orden (viñetas) = `ul`. Con orden (números) = `ol`. Cada elemento = `li`.",
+     recap:"`ul` = viñetas, `ol` = números, `li` = cada elemento." },
+
+   { id:'3.4', title:'Enlaces', short:'Enlaces', type:'fill', xp:30,
+     lesson:{ text:["Los enlaces son lo que hace “web” a la web. Se hacen con `<a>` (*anchor*, ancla). Necesita el atributo `href` (*hypertext reference*) que dice **a dónde lleva**. El texto que ponés entre las etiquetas es lo que se ve y se toca.",
+       "Un atributo se escribe adentro de la etiqueta de apertura: `nombre=\"valor\"`. Las direcciones externas empiezan con `https://`."],
+       code:`<a href="https://es.wikipedia.org">Ir a Wikipedia</a>`, cap:"`href` es el atributo; el texto “Ir a Wikipedia” es lo que se ve." },
+     code:`<!-- Un enlace a Wikipedia -->
+<p>Buscá info en <{{a}} {{href}}="https://es.wikipedia.org">Wikipedia</{{a}}>.</p>
+
+<!-- Otro enlace, ahora a YouTube -->
+<p>Mirá videos en <a {{href}}="https://www.youtube.com">YouTube</a>.</p>`,
+     bank:['a','href','src','link'],
+     hint:"La etiqueta es `a` y el atributo que dice a dónde ir es `href`.",
+     recap:"`<a href=\"…\">texto</a>`: la `a` crea el enlace y `href` es la dirección." },
+
+   { id:'3.5', title:'Mi lista de enlaces', short:'Mis enlaces', type:'code', xp:30, noHearts:true,
+     lesson:{ text:["Ahora combinemos todo: una lista donde cada elemento es un enlace. Los enlaces van **dentro** de los `<li>`.",
+       "Podés usar direcciones como `https://www.google.com`, `https://scratch.mit.edu` o `https://es.wikipedia.org`. En la vista previa no se abren (no hay conexión), ¡pero igual cuentan!"],
+       code:`<ul>\n  <li><a href="https://scratch.mit.edu">Scratch</a></li>\n</ul>`, cap:"El enlace `<a>` está adentro del `<li>`." },
+     placeholder:'', starter:`<h2>Mis sitios favoritos</h2>\n`,
+     rules:[
+       { label:"Un `<ul>` con al menos 3 `<li>`", ok:(c,d)=>liCount(d,'ul')>=3 },
+       { label:"Al menos 2 enlaces `<a href=\"https://…\">` con texto", ok:(c,d)=>links(d).length>=2 },
+       { label:"Los enlaces están dentro de un `<li>`", ok:(c,d)=>links(d).filter(a=>a.closest('li')).length>=2 }
+     ],
+     hint:["Ejemplo de elemento: `<li><a href=\"https://www.google.com\">Google</a></li>`.","Acordate de las comillas en el href y de cerrar `</a>` y `</li>`."],
+     recap:"Podés anidar etiquetas: un `<a>` dentro de un `<li>` dentro de un `<ul>`." },
+
+   { id:'3.6', title:'Uní las etiquetas', short:'Uní etiquetas', type:'match', xp:30, hearts:4,
+     lesson:{ text:["Juego de memoria: unir cada etiqueta con lo que hace. Tocá una de la izquierda y después su pareja de la derecha."], code:null },
+     pairs:[{a:'<ul>',b:'Lista con viñetas'},{a:'<ol>',b:'Lista numerada'},{a:'<li>',b:'Un elemento de la lista'},{a:'<a>',b:'Un enlace'},{a:'href',b:'La dirección a la que lleva el enlace'}],
+     hint:"`ul` = viñetas, `ol` = números, `li` = elemento, `a` = enlace, `href` = destino.",
+     recap:"`ul`, `ol`, `li`, `a` y `href`: las piezas de listas y enlaces." },
+
+   { id:'3.7', title:'Cazabichos: listas y enlaces', short:'Cazabichos ⏱', type:'bugs', xp:30, time:90, hearts:4,
+     lesson:{ text:["Hay **4 bichos** en esta lista de sitios. Tenés **90 segundos**. ¡Atención a cierres y atributos!"], code:null },
+     codeLines:[`<h2>Mis sitios favoritos</h2>`,`<ul>`,`  <li>Wikipedia</lo>`,`  <li><a hre="https://youtube.com">YouTube</a></li>`,`  <li><a href="https://scratch.mit.edu">Scratch</a></li>`,`  <li>Google<li>`,`</ol>`,`<p>¡Visitalos!</p>`],
+     bugs:[2,3,5,6],
+     explain:{2:"El cierre está mal escrito: es `</li>`.",3:"El atributo se llama `href` (con dos letras al final), no `hre`.",5:"Falta la barra: el cierre es `</li>`.",6:"La lista se abrió con `<ul>` y tiene que cerrarse con `</ul>`, no `</ol>`."},
+     hint:"Mirá cada `<li>` y cada cierre. Una lista que abre con `ul` cierra con `ul`.",
+     recap:"Los atributos se escriben bien y cada etiqueta se cierra con su propio nombre." },
+
+   { id:'3.8', title:'Jefe: el Duende de las Listas', short:'👑 Jefe', type:'code', xp:60, boss:true, noHearts:true,
+     lesson:{ text:["¡Jefe del Mundo 3! Armá una **guía de links**: una página con un ranking numerado, una lista de extras y enlaces. Te dejo el esqueleto."], code:null },
+     placeholder:'', starter:SKEL_BLANK,
+     rules:[
+       { label:"El `<title>` dice algo", ok:(c,d)=>!!textOf(d.querySelector('head title')) },
+       { label:"Un `<h1>` con el nombre de tu guía", ok:(c,d)=>!!textOf(d.body.querySelector('h1')) },
+       { label:"Una lista numerada `<ol>` con al menos 3 `<li>` (tu Top 3)", ok:(c,d)=>liCount(d,'ol')>=3 },
+       { label:"Una lista con viñetas `<ul>` con al menos 2 `<li>`", ok:(c,d)=>liCount(d,'ul')>=2 },
+       { label:"Al menos 3 enlaces `<a href=\"https://…\">` con texto adentro de los `<li>`", ok:(c,d)=>links(d).filter(a=>a.closest('li')).length>=3 },
+       { label:"Un párrafo `<p>` con una palabra en `<strong>`", ok:(c,d)=>!!textOf(d.body.querySelector('p strong')) }
+     ],
+     hint:["Tema sugerido: “Mis sitios favoritos”, “Tutoriales de juegos”, “Páginas para estudiar”…","Armá `<ol>` con 3 `<li>`, cada uno con un `<a href=\"https://…\">`.","Después sumá un `<ul>` con 2 elementos y un `<p>` con `<strong>`."],
+     recap:"¡Dominás listas y enlaces! Con eso ya se arma casi cualquier menú o índice." }
+  ]},
+
+ { id:4, name:'Imágenes', icon:'🖼️', desc:'Sumá fotos y dibujos a tus páginas. ¡Y que se entiendan para todos!',
+  levels:[
+   { id:'4.1', title:'La etiqueta img', short:'La etiqueta img', type:'fill', xp:30, files:true,
+     lesson:{ text:["Para mostrar una imagen se usa `<img>` (*image*). Es una etiqueta **vacía**: no tiene contenido ni cierre, solo atributos:",
+       "• `src` (*source*): el nombre del archivo de la imagen.  • `alt`: un texto que **describe** la imagen.  • `width`: el ancho en píxeles (opcional)."],
+       code:`<img src="gato.png" alt="Un gato naranja" width="150">`, cap:"Sin `</img>`: las etiquetas vacías no se cierran, como `<br>`." },
+     code:`<!-- Mostrá la foto gato.png -->
+<{{img}} {{src}}="gato.png" {{alt}}="Un gato naranja">
+
+<!-- Mostrá perro.png más chico: 150 de ancho -->
+<img src="perro.png" {{width}}="150" alt="Un perro">`,
+     bank:['img','src','alt','width'],
+     hint:"La etiqueta es `img`. El archivo va en `src`, la descripción en `alt` y el tamaño en `width`.",
+     recap:"`<img src=\"archivo\" alt=\"descripción\">`: no se cierra." },
+
+   { id:'4.2', title:'Mi mascota', short:'Mi mascota', type:'code', xp:30, noHearts:true, files:true,
+     lesson:{ text:["Ahora insertá vos una imagen. Usá uno de los archivos de tu carpeta (por ejemplo `gato.png` o `perro.png`).",
+       "Si el nombre del archivo está mal, la imagen se “rompe” y se ve solo el texto del `alt`. ¡Por eso el `alt` es tan útil!"],
+       code:null },
+     placeholder:'', starter:'',
+     rules:[
+       { label:"Un `<h1>` con el nombre de tu mascota (real o inventada)", ok:(c,d)=>!!textOf(d.body.querySelector('h1')) },
+       { label:"Una imagen `<img>` que se vea (con un `src` de tu carpeta)", ok:(c,d)=>[...d.body.querySelectorAll('img')].some(validImg) },
+       { label:"Todas tus imágenes tienen `alt` con texto", ok:(c,d)=>{const i=[...d.body.querySelectorAll('img')];return i.length>0&&i.every(hasAlt);} },
+       { label:"Un párrafo `<p>` que cuente algo", ok:(c,d)=>!!textOf(d.body.querySelector('p')) }
+     ],
+     hint:["Ejemplo: `<img src=\"gato.png\" alt=\"Mi gato\">`.","Si no se ve, revisá que el nombre del archivo esté escrito igual que en la lista."],
+     recap:"Una imagen necesita `src` (qué archivo) y `alt` (qué muestra)." },
+
+   { id:'4.3', title:'Imágenes rotas', short:'Imágenes rotas', type:'code', xp:30, noHearts:true, files:true,
+     lesson:{ text:["Esta galería tiene imágenes **rotas** (se ve el texto del `alt` en lugar de la foto). Arreglá los nombres de archivo para que todas se vean."], code:null },
+     placeholder:'', starter:`<h1>Mi galería</h1>\n<img src="gato.jpg" alt="Un gato">\n<img src="perro.png" alt="Un perro">\n<img src="paisage.jpg" alt="Un paisaje">\n`,
+     rules:[
+       { label:"Hay al menos 3 imágenes", ok:(c,d)=>d.body.querySelectorAll('img').length>=3 },
+       { label:"Todas las imágenes se ven (nombres de archivo correctos)", ok:(c,d)=>{const i=[...d.body.querySelectorAll('img')];return i.length>0&&i.every(validImg);} },
+       { label:"Todas tienen `alt` con texto", ok:(c,d)=>{const i=[...d.body.querySelectorAll('img')];return i.length>0&&i.every(hasAlt);} }
+     ],
+     hint:["Comparalo con la lista de imágenes de tu carpeta, letra por letra.","`gato.jpg` no existe, pero `gato.png` sí. Y “paisage” se escribe con **j**: `paisaje.jpg`."],
+     recap:"Un nombre de archivo mal escrito rompe la imagen: tiene que coincidir exacto." },
+
+   { id:'4.4', title:'Armá la página del equipo', short:'Página del equipo', type:'order', xp:30,
+     lesson:{ text:["Una página con título, imagen, texto y lista. Mirá el resultado y ordená el código."], code:null },
+     blocks:['<h1>Mi equipo</h1>','<img src="pelota.png" alt="Una pelota" width="120">','<p>Entrenamos los <strong>martes</strong>.</p>','<h2>Jugadores</h2>','<ul>','<li>Lola</li>','<li>Tomás</li>','</ul>'],
+     target:`<h1>Mi equipo</h1>\n<img src="pelota.png" alt="Una pelota" width="120">\n<p>Entrenamos los <strong>martes</strong>.</p>\n<h2>Jugadores</h2>\n<ul>\n<li>Lola</li>\n<li>Tomás</li>\n</ul>`,
+     hint:"De arriba hacia abajo, igual que se ve: título, imagen, párrafo, subtítulo y lista.",
+     recap:"El código se lee de arriba hacia abajo, igual que la página." },
+
+   { id:'4.5', title:'Atributos', short:'Atributos', type:'match', xp:30, hearts:4,
+     lesson:{ text:["Los **atributos** le dan datos extra a una etiqueta. Uní cada uno con su función."], code:null },
+     pairs:[{a:'<img>',b:'Inserta una imagen'},{a:'src',b:'El archivo de imagen que se muestra'},{a:'alt',b:'Texto que describe la imagen'},{a:'width',b:'El ancho en píxeles'},{a:'href',b:'La dirección a la que lleva un enlace'}],
+     hint:"`src` = fuente (el archivo). `alt` = alternativo (texto). `href` = destino del enlace.",
+     recap:"`src`, `alt`, `width` y `href` son atributos: van adentro de la etiqueta de apertura." },
+
+   { id:'4.6', title:'Imagen que es enlace', short:'Imagen-enlace', type:'code', xp:30, noHearts:true, files:true,
+     lesson:{ text:["Una imagen también puede ser un enlace: poné el `<img>` **adentro** de un `<a>`. Al tocar la imagen, te lleva a la dirección."],
+       code:`<a href="https://es.wikipedia.org">\n  <img src="logo.png" alt="Ir a Wikipedia">\n</a>`, cap:"En lugar de texto, el contenido del enlace es una imagen." },
+     placeholder:'', starter:`<h2>Tocá el logo</h2>\n`,
+     rules:[
+       { label:"Un enlace `<a href=\"https://…\">` que tenga una `<img>` adentro", ok:(c,d)=>[...d.body.querySelectorAll('a[href]')].some(a=>/^https?:\/\/\S+\.\S+/i.test(a.getAttribute('href').trim())&&a.querySelector('img')) },
+       { label:"La imagen se ve y tiene `alt`", ok:(c,d)=>goodImgs(d).length>=1 }
+     ],
+     hint:["Estructura: `<a href=\"https://…\"><img src=\"logo.png\" alt=\"…\"></a>`.","Abrí el `<a>`, poné el `<img>` y recién después cerrá `</a>`."],
+     recap:"Podés poner una imagen dentro de un enlace para que sea tocable." },
+
+   { id:'4.7', title:'Cazabichos: imágenes', short:'Cazabichos ⏱', type:'bugs', xp:30, time:75, hearts:4,
+     lesson:{ text:["Una galería con **4 bichos** en las imágenes. Tenés **75 segundos**."], code:null },
+     codeLines:[`<h1>Mi galería</h1>`,`<img src="gato.png" alt="Un gato">`,`<imagen src="perro.png" alt="Un perro">`,`<img src="pizza.jpg" alt="Una pizza"></img>`,`<img alt="Un paisaje">`,`<p>Sacadas en <em>2025</em>.</p>`,`<img src="robot.png" alt="Un robot" width="100">`,`<img src="escuela.jpg" alt="La escuela" width=100">`],
+     bugs:[2,3,4,7],
+     explain:{2:"La etiqueta se llama `<img>`, no `<imagen>`.",3:"`<img>` no se cierra: sobra el `</img>`.",4:"Falta el atributo `src`: ¿qué imagen mostraría?",7:"Falta una comilla: tiene que ser `width=\"100\"`."},
+     hint:"Buscá: nombres de etiqueta inventados, cierres que sobran, atributos que faltan y comillas sin pareja.",
+     recap:"`img` no se cierra, siempre necesita `src` y las comillas van de a pares." },
+
+   { id:'4.8', title:'Jefe: el Fotógrafo', short:'👑 Jefe', type:'code', xp:60, boss:true, noHearts:true, files:true,
+     lesson:{ text:["¡Jefe del Mundo 4! Armá una página-álbum con tus imágenes favoritas de la carpeta. Te dejo el esqueleto."], code:null },
+     placeholder:'', starter:SKEL_BLANK,
+     rules:[
+       { label:"El `<title>` dice algo", ok:(c,d)=>!!textOf(d.querySelector('head title')) },
+       { label:"Un `<h1>` con el nombre de tu álbum", ok:(c,d)=>!!textOf(d.body.querySelector('h1')) },
+       { label:"Al menos 3 imágenes que se vean, cada una con `alt`", ok:(c,d)=>goodImgs(d).length>=3 },
+       { label:"Al menos un `<h2>` con texto", ok:(c,d)=>!!textOf(d.body.querySelector('h2')) },
+       { label:"Una lista (`<ul>` u `<ol>`) con al menos 2 `<li>`", ok:(c,d)=>liCount(d,'ul')+liCount(d,'ol')>=2 },
+       { label:"Un enlace `<a href=\"https://…\">` con texto", ok:(c,d)=>links(d).length>=1 }
+     ],
+     hint:["Tema: “Mis cosas favoritas”. Usá `pizza.jpg`, `robot.png`, `pelota.png`, `gato.png`…","Cada imagen: `<img src=\"pizza.jpg\" alt=\"Una pizza\" width=\"150\">`.","Una lista puede describir cada foto, y el enlace puede ir a tu sitio favorito."],
+     recap:"¡Ya sabés sumar imágenes bien hechas, con descripción y tamaño!" }
+  ]},
+
+ { id:5, name:'El gran jefe final', icon:'🏰', desc:'Todo lo que aprendiste, junto. ¡Y tu propio sitio web!',
+  levels:[
+   { id:'5.1', title:'Repaso general', short:'Repaso general', type:'quiz', xp:30, hearts:4,
+     lesson:{ text:["Repaso de **todo** el juego: esqueleto, texto, listas, enlaces e imágenes. Ojo con los detalles del código."], code:null },
+     questions:[
+       { q:"¿Qué le falta a esta lista?", code:`<ul>\n  <li>Pan</li>\n  <li>Leche</li>`, opts:["El cierre `</ul>`","Un `<br>`","Un `<h1>`","Nada, está bien"], a:0, why:"Todo lo que se abre, se cierra." },
+       { q:"¿Cómo se ve esto en pantalla?", code:`<p>Hola <strong>mundo</strong></p>`, opts:["“Hola mundo”, con la palabra mundo en negrita","“Hola mundo” todo en cursiva","Solo se ve la palabra mundo","No se ve nada"], a:0, why:"`strong` pone en negrita lo que encierra." },
+       { q:"Querés que al tocar “Google” te lleve al buscador. ¿Cuál es correcta?", opts:["`<a href=\"https://google.com\">Google</a>`","`<a src=\"https://google.com\">Google</a>`","`<link>Google</link>`","`<img href=\"https://google.com\">`"], a:0, why:"Los enlaces usan `<a>` con el atributo `href`." },
+       { q:"¿Para qué sirve el atributo `alt` de una imagen?", opts:["Describe la imagen con texto (si no carga, o para quien no puede verla)","Cambia el tamaño","Elige el archivo","Le pone un borde"], a:0, why:"El `alt` hace tu página accesible para todos." },
+       { q:"¿Cuál de estas etiquetas NO se cierra?", opts:["`<img>`","`<li>`","`<a>`","`<ol>`"], a:0, why:"`img` (igual que `br`) es una etiqueta vacía." },
+       { q:"¿Qué va dentro del `<head>`?", opts:["El `<title>`","El `<h1>`","Las imágenes","Los párrafos"], a:0, why:"El `head` guarda información como el título de la pestaña." }
+     ],
+     hint:"Repasá: lo que se abre se cierra (menos `img` y `br`), `href` lleva a otro lado, `alt` describe la imagen.",
+     recap:"Ya conocés las etiquetas fundamentales de HTML." },
+
+   { id:'5.2', title:'Superuní', short:'Superuní', type:'match', xp:30, hearts:4,
+     lesson:{ text:["Última ronda de unir. Seis etiquetas, seis funciones."], code:null },
+     pairs:[{a:'<h1>',b:'El título principal'},{a:'<p>',b:'Un párrafo de texto'},{a:'<strong>',b:'Texto en negrita'},{a:'<br>',b:'Un salto de línea'},{a:'<img>',b:'Una imagen'},{a:'<title>',b:'El nombre de la pestaña'}],
+     hint:"Pensá en las misiones anteriores: cada una la usaste al menos una vez.",
+     recap:"Estas son las etiquetas que más vas a usar al armar páginas." },
+
+   { id:'5.3', title:'La página completa', short:'Página completa', type:'order', xp:30,
+     lesson:{ text:["Un documento completo, de la primera a la última línea. Mirá el resultado y ordená **todo** el código."], code:null },
+     blocks:['<!DOCTYPE html>','<html>','<head>','<title>Mi club</title>','</head>','<body>','<h1>Mi club</h1>','<ul>','<li>Fútbol</li>','<li>Vóley</li>','</ul>','</body>','</html>'],
+     target:`<!DOCTYPE html><html><head><title>Mi club</title></head><body><h1>Mi club</h1><ul><li>Fútbol</li><li>Vóley</li></ul></body></html>`,
+     hint:"El esqueleto de siempre; adentro del `body` va el título y después la lista.",
+     recap:"Todo junto: esqueleto + contenido." },
+
+   { id:'5.4', title:'Cazabichos: nivel experto', short:'Cazabichos ⏱', type:'bugs', xp:40, time:90, hearts:4,
+     lesson:{ text:["El desafío más difícil: una página completa con **5 bichos**. Tenés **90 segundos**. ¡Cazadores expertos, a trabajar!"], code:null },
+     codeLines:[`<!DOCTYPE html>`,`<html>`,`  <head>`,`    <title>Mi viaje</title>`,`  </head>`,`  <body>`,`    <h1>Mi viaje a Bariloche<h1>`,`    <img src="paisaje.jpg" alt="El lago>`,`    <p>Fuimos en <strong>invierno</strong>.</p>`,`    <h2>Lo que hicimos</h2>`,`    <ul>`,`      <li>Esquiar</li>`,`      <li>Sacar fotos</li`,`    </ul>`,`    <p>Mirá el <a href="https://www.bariloche.gob.ar">sitio oficial</p></a>`,`  </bodi>`,`</html>`],
+     bugs:[6,7,12,14,15],
+     explain:{6:"El `<h1>` se cerró con `<h1>`: falta la barra, es `</h1>`.",7:"Falta la comilla de cierre del `alt`: `alt=\"El lago\"`.",12:"`</li` quedó sin el `>` final.",14:"Mal anidado: primero se cierra `</a>` y después `</p>`.",15:"`</bodi>` está mal escrita: es `</body>`."},
+     hint:"Revisá cada cierre y cada comilla. Hay errores de barra, de comillas, de orden y de ortografía.",
+     recap:"Con práctica, encontrar errores en HTML se vuelve rapidísimo." },
+
+   { id:'5.5', title:'Jefe final: el Rey del HTML', short:'👑 Jefe final', type:'code', xp:80, boss:true, noHearts:true, files:true,
+     lesson:{ text:["¡EL JEFE FINAL! Creá **tu propio sitio web** sobre lo que más te guste: tu club, tu banda, tu videojuego, tu mascota… Usá todo lo aprendido. Te dejo el esqueleto.",
+       "Cumplí todos los objetivos y vas a convertirte en **Rey (o Reina) del HTML** 👑."], code:null },
+     placeholder:'', starter:SKEL_BLANK,
+     rules:[
+       { label:"El `<title>` dice algo", ok:(c,d)=>!!textOf(d.querySelector('head title')) },
+       { label:"Un `<h1>` con el nombre de tu sitio", ok:(c,d)=>!!textOf(d.body.querySelector('h1')) },
+       { label:"Al menos 2 subtítulos `<h2>` con texto", ok:(c,d)=>[...d.body.querySelectorAll('h2')].filter(x=>textOf(x)).length>=2 },
+       { label:"Al menos 2 párrafos `<p>` con texto", ok:(c,d)=>[...d.body.querySelectorAll('p')].filter(x=>textOf(x)).length>=2 },
+       { label:"Una palabra en `<strong>` y otra en `<em>`", ok:(c,d)=>!!textOf(d.body.querySelector('strong'))&&!!textOf(d.body.querySelector('em')) },
+       { label:"Una lista `<ul>` u `<ol>` con al menos 3 `<li>`", ok:(c,d)=>liCount(d,'ul')>=3||liCount(d,'ol')>=3 },
+       { label:"Al menos 2 enlaces `<a href=\"https://…\">` con texto", ok:(c,d)=>links(d).length>=2 },
+       { label:"Al menos 1 imagen que se vea, con `alt`", ok:(c,d)=>goodImgs(d).length>=1 }
+     ],
+     hint:["Elegí un tema y escribí primero el `<title>` y el `<h1>`.","Dividí tu sitio en secciones con `<h2>` (por ejemplo “Quiénes somos” y “Mis favoritos”).","Mirá la vista previa de a poco: probá cada parte antes de seguir."],
+     recap:"¡Lo lograste! Creaste un sitio con estructura, texto, listas, enlaces e imágenes. Ya sabés HTML básico." }
+  ]}
+);
+const FUTURE = [];
+const LEVELS = WORLDS.flatMap(w => w.levels.map(l => Object.assign(l,{world:w})));
+const LV = Object.fromEntries(LEVELS.map(l=>[l.id,l]));
+const TYPEINFO = { quiz:['🧠','Preguntas'], order:['🧩','Ordenar bloques'], fill:['✏️','Completar'], bugs:['🐞','Cazabichos'], code:['⌨️','Programar'], match:['🧲','Unir parejas'] };
+
+/* ---------- insignias ---------- */
+const worldDone = (p,n) => WORLDS[n-1].levels.every(l=>p.done[l.id]);
+const BADGES = [
+  { id:'first', icon:'🚩', name:'Primer paso', desc:'Completá tu primera misión', test:p=>Object.keys(p.done).length>=1 },
+  { id:'perfect', icon:'⭐', name:'Perfecto', desc:'3 estrellas en una misión', test:p=>Object.values(p.done).some(d=>d.stars===3) },
+  { id:'streak', icon:'🔥', name:'En racha', desc:'5 aciertos seguidos', test:p=>!!p.flags.streak5 },
+  { id:'hunter', icon:'🐞', name:'Cazabichos', desc:'Ganale al reloj en Cazabichos', test:p=>!!p.done['2.5'] },
+  { id:'lvl3', icon:'🚀', name:'Nivel 3', desc:'Llegá al nivel 3', test:p=>levelOf(xpOf(p))>=3 },
+  { id:'w1', icon:'🦴', name:'Dueño del esqueleto', desc:'Terminá el Mundo 1', test:p=>worldDone(p,1) },
+  { id:'w2', icon:'✍️', name:'Maestro del texto', desc:'Terminá el Mundo 2', test:p=>worldDone(p,2) },
+  { id:'w3', icon:'🔗', name:'Rey de los enlaces', desc:'Terminá el Mundo 3', test:p=>worldDone(p,3) },
+  { id:'w4', icon:'📸', name:'Fotógrafo web', desc:'Terminá el Mundo 4', test:p=>worldDone(p,4) },
+  { id:'w5', icon:'🏰', name:'Rey del HTML', desc:'Vencé al jefe final', test:p=>worldDone(p,5) },
+  { id:'gold', icon:'👑', name:'Estrella dorada', desc:'3 estrellas en todo un mundo', test:p=>WORLDS.some(w=>w.levels.every(l=>p.done[l.id]&&p.done[l.id].stars===3)) }
+];
+const earned = p => BADGES.filter(b=>b.test(p)).map(b=>b.id);
+
+/* ============================================================
+   DATOS DEL JUGADOR
+   ============================================================ */
+function fixPlayer(p){ p.done=p.done||{}; p.flags=p.flags||{}; p.spent=p.spent||0; p.totalErrors=p.totalErrors||0; return p; }
+function loadDB(){
+  try{ const d=JSON.parse(localStorage.getItem(KEY)); if(d&&d.players){ Object.values(d.players).forEach(fixPlayer); return d; } }catch(e){}
+  return { players:{}, current:null };
+}
+let db = loadDB();
+function saveDB(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){ toast('⚠️ No se pudo guardar el progreso en esta PC'); } }
+const me = () => db.current ? db.players[db.current] : null;
+const xpOf = p => Object.entries(p.done).reduce((s,[id,d])=>s+(LV[id]?LV[id].xp+(d.stars-1)*10:0),0);
+const coinsOf = p => 10 + Object.values(p.done).reduce((s,d)=>s+d.stars*3,0) - (p.spent||0);
+const XP_PER_LEVEL = 150;
+const levelOf = xp => Math.floor(xp/XP_PER_LEVEL)+1;
+const rankOf = lv => RANKS[Math.min(Math.floor((lv-1)/2),RANKS.length-1)];
+const isUnlocked = i => i===0 || !!(me().done[LEVELS[i-1].id]);
+const nextLevelId = () => { const p=me(); const L=LEVELS.find(l=>!p.done[l.id]); return L?L.id:null; };
+
+function cleanPlayer(raw){
+  if(!raw || typeof raw.name!=='string' || typeof raw.curso!=='string') return null;
+  const name=raw.name.trim().slice(0,40), curso=raw.curso.trim().slice(0,12);
+  if(name.length<2||!curso) return null;
+  const p=fixPlayer({ id:pid(name,curso), name, curso, avatar:AVATARS.includes(raw.avatar)?raw.avatar:AVATARS[0],
+    done:{}, flags:{}, spent:Math.max(0,+raw.spent||0), totalErrors:Math.max(0,+raw.totalErrors||0), lastSeen:+raw.lastSeen||0, created:+raw.created||0 });
+  for(const [id,d] of Object.entries(raw.done||{})){
+    if(LV[id] && d && d.stars>=1 && d.stars<=3) p.done[id]={ stars:d.stars|0, errors:Math.max(0,d.errors|0), tries:Math.max(1,d.tries|0), ts:+d.ts||0 };
+  }
+  if(raw.flags&&raw.flags.streak5) p.flags.streak5=true;
+  return p;
+}
+function mergePlayer(a,b){
+  for(const [id,d] of Object.entries(b.done)){
+    const o=a.done[id];
+    if(!o || d.stars>o.stars || (d.stars===o.stars && d.errors<o.errors)) a.done[id]={...d, tries:Math.max(d.tries,o?o.tries:0)};
+    else o.tries=Math.max(o.tries,d.tries);
+  }
+  a.spent=Math.max(a.spent,b.spent); a.totalErrors=Math.max(a.totalErrors,b.totalErrors);
+  if(b.flags.streak5) a.flags.streak5=true;
+  if((b.lastSeen||0)>(a.lastSeen||0)){ a.lastSeen=b.lastSeen; a.avatar=b.avatar; }
+  return a;
+}
+
+/* ============================================================
+   MONTAJE DE PANTALLAS
+   ============================================================ */
+/* ============================================================
+   RANKING COMPARTIDO (planilla de Google + Apps Script)
+   Si RANKING_URL está vacío, el ranking muestra solo a los jugadores de esta PC.
+   ============================================================ */
+function cyrb53(str,seed=0){
+  let h1=0xdeadbeef^seed, h2=0x41c6ce57^seed;
+  for(let i=0,ch;i<str.length;i++){ ch=str.charCodeAt(i); h1=Math.imul(h1^ch,2654435761); h2=Math.imul(h2^ch,1597334677); }
+  h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);
+  h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);
+  return (4294967296*(2097151&h2)+(h1>>>0)).toString(36);
+}
+const shortName = n => { const t=n.trim().split(/\s+/); return t.length<2 ? t[0] : `${t[0]} ${t[t.length-1][0].toUpperCase()}.`; };
+const starsOf = p => Object.values(p.done).reduce((s,d)=>s+d.stars,0);
+const summary = p => ({ k:cyrb53(p.id), id:p.id, name:p.name, curso:p.curso, avatar:p.avatar, xp:xpOf(p), lv:levelOf(xpOf(p)), m:Object.keys(p.done).length, s:starsOf(p), e:p.totalErrors });
+const localRow = p => ({ k:cyrb53(p.id), n:shortName(p.name), c:p.curso, a:p.avatar, xp:xpOf(p), lv:levelOf(xpOf(p)), m:Object.keys(p.done).length, s:starsOf(p), e:p.totalErrors||0 });
+const rankSort = (a,b) => (b.xp-a.xp) || (b.s-a.s) || ((a.e||0)-(b.e||0)) || a.n.localeCompare(b.n,'es');
+let lastSync = 0, rankCache = null;
+async function withTimeout(url,opts,ms=8000){
+  const ac=new AbortController(), t=setTimeout(()=>ac.abort(),ms);
+  try{ return await fetch(url,{...opts,signal:ac.signal}); } finally{ clearTimeout(t); }
+}
+async function syncProgress(p,force){
+  if(!RANKING_URL||!p) return;
+  const s=summary(p), sig=`${s.xp}|${s.m}|${s.s}|${s.e}`;
+  if(p.sync===sig) return;
+  if(!force && Date.now()-lastSync<4000) return;
+  lastSync=Date.now();
+  try{ await withTimeout(RANKING_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(s)}); p.sync=sig; saveDB(); rankCache=null; }catch(e){ /* se reintenta más tarde */ }
+}
+async function fetchRanking(force){
+  if(!RANKING_URL) return { rows:Object.values(db.players).map(localRow), local:true };
+  if(!force && rankCache && Date.now()-rankCache.t<15000) return rankCache;
+  const r=await withTimeout(RANKING_URL+'?action=list',{cache:'no-store'});
+  const rows=await r.json();
+  if(!Array.isArray(rows)) throw new Error('formato');
+  return (rankCache={ t:Date.now(), rows, local:false });
+}
+
+const app = document.getElementById('app');
+let S = null;              // sesión de misión actual
+let teacherOK = false;
+function clearTimers(){ if(S&&S.timer){ clearInterval(S.timer); S.timer=null; } }
+function mount(...nodes){ clearTimers(); app.replaceChildren(topbar(), h('main',{class:'wrap'},...nodes)); window.scrollTo(0,0); }
+
+function playerChip(p){
+  const xp=xpOf(p), lv=levelOf(xp);
+  return h('div',{class:'pchip'},
+    h('div',{class:'av',text:p.avatar}),
+    h('div',null,
+      h('div',{class:'nm',text:p.name}),
+      h('div',{class:'rk',text:`Nv ${lv} · ${rankOf(lv)} · ${xp} XP`}),
+      h('div',{class:'xpbar'},h('i',{style:`width:${(xp%XP_PER_LEVEL)/XP_PER_LEVEL*100}%`}))),
+    h('span',{class:'coinpill',text:`🪙 ${coinsOf(p)}`}));
+}
+function topbar(){
+  const p=me();
+  const snd=h('button',{class:'icon-btn',title:'Sonido',text:muted?'🔇':'🔊',onclick:()=>{
+    muted=!muted; try{localStorage.setItem(MUTE_KEY,muted?'1':'0');}catch(e){} snd.textContent=muted?'🔇':'🔊'; sfx.click(); }});
+  return h('header',{class:'topbar'},
+    h('button',{class:'logo',onclick:()=>p?screenMap():screenLogin()},h('span',{class:'logo-mark',text:'</>'}),'HTML Quest'),
+    h('div',{class:'grow'}),
+    p && playerChip(p),
+    p && h('button',{class:'icon-btn',title:'Ranking',text:'🏆',onclick:()=>{ sfx.click(); screenRanking(); }}), snd,
+    p && h('button',{class:'icon-btn',title:'Cambiar de jugador',text:'🚪',onclick:()=>{ db.current=null; saveDB(); screenLogin(); }}));
+}
+
+/* ---------- login ---------- */
+function screenLogin(){
+  let avatar=AVATARS[0];
+  const name=h('input',{placeholder:'Nombre y apellido',maxlength:40,autocomplete:'off'});
+  const curso=h('input',{placeholder:'Ej: 1° A',maxlength:12,list:'cursos',autocomplete:'off'});
+  const avBox=h('div',{class:'avatars'}, AVATARS.map(a=>h('button',{type:'button',class:a===avatar?'sel':'',text:a,onclick:e=>{
+    avatar=a; [...avBox.children].forEach(b=>b.classList.toggle('sel',b===e.currentTarget)); sfx.click(); }})));
+  const go=()=>{
+    const n=name.value.trim().replace(/\s+/g,' '), c=curso.value.trim();
+    if(n.length<2 || !c){ toast('Escribí tu nombre y tu curso 🙂'); return; }
+    const id=pid(n,c);
+    if(!db.players[id]) db.players[id]=fixPlayer({ id, name:n, curso:c, avatar, created:Date.now() });
+    enter(id);
+  };
+  const filter=h('input',{placeholder:'🔎 Buscar mi nombre…',oninput:()=>draw()});
+  const plist=h('div',{class:'plist'});
+  const draw=()=>{
+    const q=slug(filter.value);
+    const ps=Object.values(db.players).filter(p=>!q||slug(p.name+' '+p.curso).includes(q)).sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0));
+    plist.replaceChildren(...ps.map(p=>h('button',{class:'pitem',onclick:()=>enter(p.id)},
+      h('span',{class:'av',text:p.avatar}),
+      h('span',null,h('b',{text:p.name}),h('br'),h('small',{text:`${p.curso} · Nv ${levelOf(xpOf(p))} · ${Object.keys(p.done).length}/${LEVELS.length} misiones`})))));
+    if(!ps.length) plist.append(h('p',{class:'muted',text:Object.keys(db.players).length?'No encontré ese nombre.':'Todavía no hay jugadores en esta PC.'}));
+  };
+  const players=Object.keys(db.players).length;
+  mount(
+    h('div',{class:'hero'},h('h1',null,'HTML Quest ',h('span',{text:'🎮'})),h('p',null,'Aprendé a crear páginas web superando misiones. ¡Ganá XP, monedas e insignias!')),
+    h('div',{class:'login'},
+      h('div',{class:'card'},h('h2',null,'🆕 Soy nuevo/a'),
+        h('label',{class:'field'},h('span',null,'Tu nombre'),name),
+        h('label',{class:'field'},h('span',null,'Tu curso'),curso),
+        h('datalist',{id:'cursos'},['1° A','1° B','1° C','1° D'].map(c=>h('option',{value:c}))),
+        h('span',{class:'muted',text:'Elegí tu avatar:'}),avBox,
+        h('button',{class:'btn primary big',onclick:go},'¡A jugar! ▶')),
+      h('div',{class:'card'},h('h2',null,'👋 Ya jugué antes'),
+        players>6 && filter, plist)),
+    h('p',{class:'muted',style:'text-align:center;margin-top:22px'},
+      h('button',{class:'btn ghost small',onclick:askPin},'🧑‍🏫 Panel docente')));
+  draw();
+  name.focus();
+}
+function enter(id){ db.current=id; db.players[id].lastSeen=Date.now(); saveDB(); sfx.click(); screenMap(); }
+
+/* ---------- mapa ---------- */
+function screenMap(){
+  const p=me(); const nxt=nextLevelId(); const have=new Set(earned(p));
+  syncProgress(p);
+  const worlds=WORLDS.map(w=>{
+    const doneN=w.levels.filter(l=>p.done[l.id]).length;
+    return h('section',{class:'world card'},
+      h('div',{class:'world-head'},h('h2',{text:`${w.icon} Mundo ${w.id}: ${w.name}`}),h('span',{class:'muted',text:`${doneN}/${w.levels.length} misiones`})),
+      h('p',{class:'muted',text:w.desc}),
+      h('div',{class:'path'}, w.levels.map(L=>{
+        const i=LEVELS.indexOf(L), ok=isUnlocked(i), d=p.done[L.id];
+        return h('button',{class:`node${L.boss?' boss':''}${d?' done':''}${!ok?' locked':''}${L.id===nxt?' next':''}`,disabled:!ok,title:L.title,onclick:()=>{ sfx.click(); showLesson(L); }},
+          h('span',{class:'bub',text:!ok?'🔒':d?'✔':L.boss?'👑':TYPEINFO[L.type][0]}),
+          h('span',{class:'stars',text:d?'★'.repeat(d.stars)+'☆'.repeat(3-d.stars):''}),
+          h('span',{class:'lbl',text:L.short}));
+      })));
+  });
+  const future=FUTURE.map((f,i)=>h('section',{class:'world card future'},h('div',{class:'world-head'},h('h2',{text:`🔒 Mundo ${WORLDS.length+i+1}: ${f.name}`}),h('span',{class:'muted',text:'Próximamente'})),h('p',{class:'muted'},f.icon+' ',rich(f.desc))));
+  mount(
+    h('div',{class:'card',style:'margin-bottom:18px'},
+      h('div',{class:'row'},h('h2',{style:'margin:0',text:`¡Hola, ${p.name.split(' ')[0]}! ${p.avatar}`}),h('div',{class:'grow'}),
+        h('button',{class:'btn small primary',onclick:screenRanking},'🏆 Ranking'),
+        h('button',{class:'btn small',onclick:()=>{ download(`htmlquest-${slug(p.name)}.json`, JSON.stringify({app:'htmlquest',version:1,players:{[p.id]:p}},null,1),'application/json'); }},'💾 Guardar mi progreso en un archivo')),
+      h('p',{class:'muted',style:'margin:6px 0 10px',text:nxt?'Seguí con la misión que late ✨ en el mapa.':'¡Completaste todas las misiones disponibles! Podés repetirlas para conseguir más estrellas.'}),
+      h('div',{class:'badges'},BADGES.map(b=>h('div',{class:`badge${have.has(b.id)?'':' off'}`,title:b.desc},h('div',{class:'ic',text:have.has(b.id)?b.icon:'?'}),h('b',{text:b.name}),h('div',{class:'muted',text:have.has(b.id)?'':b.desc}))))),
+    ...worlds, ...future);
+}
+
+/* ---------- ranking ---------- */
+function screenRanking(){
+  const p=me(); const myK=cyrb53(p.id);
+  let scope='curso', data=null;
+  const note=h('p',{class:'muted',style:'margin:0 0 12px'});
+  const tabs=h('div',{class:'row',style:'margin-bottom:12px'});
+  const body=h('div');
+  const draw=()=>{
+    tabs.replaceChildren(
+      h('button',{class:`btn small${scope==='curso'?' primary':''}`,onclick:()=>{ scope='curso'; draw(); }},`👥 Mi curso (${p.curso})`),
+      h('button',{class:`btn small${scope==='todos'?' primary':''}`,onclick:()=>{ scope='todos'; draw(); }},'🌎 Todos los cursos'),
+      h('button',{class:'btn small ghost',onclick:()=>load(true)},'🔄 Actualizar'));
+    if(!data){ note.textContent=''; body.replaceChildren(h('p',{class:'muted',text:'Cargando el ranking…'})); return; }
+    note.textContent = data.local ? (RANKING_URL ? '⚠️ No pude conectar con el ranking general: mostrando solo a los jugadores de esta PC.' : 'Ranking de esta PC (todavía no está conectado el ranking general).') : '';
+    let rows=data.rows.filter(r=>r.k!==myK);
+    rows.push(localRow(p));                                   // mi fila siempre al día
+    if(scope==='curso') rows=rows.filter(r=>slug(r.c)===slug(p.curso));
+    rows.sort(rankSort);
+    const myPos=rows.findIndex(r=>r.k===myK);
+    const medals=['🥇','🥈','🥉'];
+    const top=rows.slice(0,3);
+    const cheer = myPos===0 ? '👑 ¡Estás primero! Defendé tu puesto.' :
+      `Estás en el puesto ${myPos+1} de ${rows.length} · Te faltan ${rows[myPos-1].xp-rows[myPos].xp+1} XP para pasar a ${rows[myPos-1].n}`;
+    const rest=rows.slice(3,20).map((r,i)=>[r,i+4]);
+    if(myPos>=20) rest.push([rows[myPos],myPos+1]);
+    body.replaceChildren(
+      h('div',{class:'banner',text:cheer}),
+      h('div',{class:'podium'},top.map((r,i)=>h('div',{class:`pod pod${i+1}${r.k===myK?' me':''}`},
+        h('div',{class:'medal',text:medals[i]}),h('div',{class:'pav',text:r.a}),h('b',{text:r.n}),
+        h('div',{class:'muted',text:`${r.c} · Nv ${r.lv}`}),h('div',{class:'gain',text:`${r.xp} XP`})))),
+      rows.length>3 && h('div',{class:'tablewrap',style:'margin-top:14px'},h('table',null,
+        h('thead',null,h('tr',null,['#','Jugador','Curso','Nivel','XP','⭐','Misiones'].map(t=>h('th',{text:t})))),
+        h('tbody',null,rest.map(([r,pos])=>h('tr',{class:r.k===myK?'me':''},
+          h('td',{text:pos}),h('td',{text:`${r.a} ${r.n}`}),h('td',{text:r.c}),h('td',{text:r.lv}),h('td',{text:r.xp}),h('td',{text:r.s}),h('td',{text:`${r.m}/${LEVELS.length}`})))))));
+  };
+  const load=async force=>{
+    data=null; draw();
+    await syncProgress(p,true);
+    try{ data=await fetchRanking(force); }catch(e){ data={ rows:Object.values(db.players).map(localRow), local:true }; }
+    if(!document.body.contains(body)) return;
+    draw();
+  };
+  mount(h('div',{class:'card'},
+    h('div',{class:'row'},h('h2',{style:'margin:0',text:'🏆 Ranking'}),h('div',{class:'grow'}),h('button',{class:'btn ghost',onclick:screenMap},'← Volver al mapa')),
+    h('p',{class:'muted',text:'Se ordena por XP. Ganás XP completando misiones y mejorando tus estrellas. ¡Desempatan las estrellas y los menos errores!'}),
+    tabs,note,body));
+  load(false);
+}
+
+/* ---------- lección ---------- */
+function showLesson(L){
+  const [ic,label]=TYPEINFO[L.type];
+  mount(h('div',{class:'lesson card'},
+    h('span',{class:'tag-pill',text:`${L.world.icon} Mundo ${L.world.id} · Misión ${L.id} · ${ic} ${label}`}),
+    h('h1',{text:L.title}),
+    L.lesson.text.map(t=>h('p',null,rich(t))),
+    L.lesson.code && h('pre',{class:'code'},hl(L.lesson.code)),
+    L.lesson.cap && h('p',{class:'cap'},rich(L.lesson.cap)),
+    L.files && filesNote(),
+    h('div',{class:'row',style:'margin-top:12px'},
+      h('button',{class:'btn primary big',onclick:()=>startLevel(L)},'¡Empezar misión! ▶'),
+      h('button',{class:'btn ghost',onclick:screenMap},'← Volver al mapa'))));
+}
+
+/* ---------- sesión de juego ---------- */
+function startLevel(L){
+  clearTimers();
+  S={ lvl:L, hearts:L.hearts||3, maxHearts:L.hearts||3, errors:0, hints:0, streak:0, maxStreak:0, finished:false, noHearts:!!L.noHearts };
+  S.main=h('div',{class:'main'});
+  S.mascot=h('span',{class:'mascot',text:'🤖'});
+  S.bubbleText=h('span');
+  S.bubble=h('div',{class:'bubble tip'},S.mascot,S.bubbleText);
+  S.heartsEl=h('span',{class:'hearts'}); S.coinEl=h('span',{class:'coinpill'}); S.streakEl=h('span',{class:'streak'});
+  const hud=h('div',{class:'hud'},
+    h('button',{class:'btn ghost small',onclick:screenMap},'← Mapa'),
+    h('div',{class:'hud-title',text:`${L.id} · ${L.title}`}), h('div',{class:'grow'}),
+    S.streakEl, S.heartsEl, S.coinEl,
+    h('button',{class:'btn small',onclick:useHint},`💡 Pista (${HINT_COST} 🪙)`));
+  mount(hud,S.bubble,S.main);
+  say(L.noHearts?'¡Vamos! Probá y mirá la vista previa. Si te trabás, tocá 💡.':'¡Vamos! Si te trabás, tocá 💡 para pedir una pista.');
+  TYPES[L.type](S.main,L);
+  updateHud();
+}
+function updateHud(){
+  S.heartsEl.textContent = S.noHearts ? '' : '❤️'.repeat(S.hearts)+'🖤'.repeat(S.maxHearts-S.hearts);
+  S.coinEl.textContent = `🪙 ${coinsOf(me())}`;
+  S.streakEl.textContent = S.streak>=2 ? `🔥 ${S.streak}` : '';
+}
+function say(text,kind='tip'){
+  S.bubble.className='bubble '+kind; S.mascot.textContent = kind==='good'?'🤩':kind==='bad'?'😅':'🤖'; S.bubbleText.replaceChildren(...rich(text));
+}
+function ok(msg){
+  S.streak++; S.maxStreak=Math.max(S.maxStreak,S.streak); sfx.ok();
+  say((msg?msg+' ':'')+(msg&&msg.length>40?'':pick(PRAISE)),'good'); updateHud();
+  if(S.streak===5) toast('🔥 ¡Racha de 5!');
+}
+function bad(msg,opts={}){
+  S.errors++; S.streak=0; sfx.bad();
+  if(!S.noHearts && !opts.free) S.hearts--;
+  say(msg,'bad'); updateHud();
+  S.main.classList.remove('shake'); void S.main.offsetWidth; S.main.classList.add('shake');
+  if(!S.noHearts && S.hearts<=0) gameOver();
+}
+function useHint(){
+  if(S.finished) return;
+  const hints=[].concat(S.lvl.hint||[]);
+  if(S.hints>=hints.length){ say('Ya te di todas las pistas que tengo 😅','tip'); return; }
+  const p=me();
+  if(coinsOf(p)<HINT_COST){ say('No te alcanzan las monedas 🪙. Ganás más completando misiones.','bad'); return; }
+  p.spent=(p.spent||0)+HINT_COST; saveDB(); sfx.coin(); say('💡 '+hints[S.hints++],'tip'); updateHud();
+}
+function gameOver(){
+  clearTimers(); S.finished=true;
+  const L=S.lvl; let close;
+  close=modal(h('div',{class:'modal-card'},h('h2',null,'💔 ¡Te quedaste sin vidas!'),
+    h('p',null,'No pasa nada: así se aprende. Repasá la lección y probá de nuevo.'),
+    h('div',{class:'row',style:'justify-content:center'},
+      h('button',{class:'btn primary',onclick:()=>{close();startLevel(L);}},'🔁 Reintentar'),
+      h('button',{class:'btn',onclick:()=>{close();showLesson(L);}},'📖 Ver la lección'),
+      h('button',{class:'btn ghost',onclick:()=>{close();screenMap();}},'Volver al mapa'))));
+}
+function nextBtn(label,fn){ return h('button',{class:'btn green big',style:'margin-top:12px',onclick:fn},label); }
+
+function win(){
+  if(S.finished) return; S.finished=true; clearTimers();
+  const L=S.lvl, p=me();
+  const stars=S.errors===0?3:S.errors<=2?2:1;
+  const before={ xp:xpOf(p), coins:coinsOf(p), badges:new Set(earned(p)) };
+  const old=p.done[L.id];
+  p.done[L.id]={ stars:Math.max(stars,old?old.stars:0), errors:old?Math.min(old.errors,S.errors):S.errors, tries:(old?old.tries:0)+1, ts:Date.now() };
+  p.totalErrors+=S.errors; if(S.maxStreak>=5) p.flags.streak5=true; p.lastSeen=Date.now();
+  saveDB(); syncProgress(p,true);
+  const after={ xp:xpOf(p), coins:coinsOf(p) };
+  const newBadges=BADGES.filter(b=>b.test(p)&&!before.badges.has(b.id));
+  screenResult(L,stars,after.xp-before.xp,after.coins-before.coins,levelOf(before.xp),levelOf(after.xp),newBadges);
+}
+function screenResult(L,stars,dxp,dcoins,lvBefore,lvAfter,newBadges){
+  sfx.win(); confetti(L.boss?90:46);
+  const i=LEVELS.indexOf(L), next=LEVELS[i+1];
+  mount(h('div',{class:'result card'},
+    h('h1',{text:L.boss?'🏆 ¡Jefe derrotado!':'¡Misión cumplida! 🎉'}),
+    h('div',{class:'bigstars'},[1,2,3].map(n=>h('span',{text:n<=stars?'★':'☆'}))),
+    h('p',{class:'muted',text:stars===3?'¡Perfecto, sin errores!':stars===2?'¡Muy bien!':'¡Lo lograste! Repetila para conseguir más estrellas.'}),
+    h('div',{class:'gains'},h('div',{class:'gain',text:dxp>0?`+${dxp} XP`:'+0 XP'}),dcoins>0&&h('div',{class:'gain',text:`+${dcoins} 🪙`})),
+    dxp===0 && h('p',{class:'muted',text:'(Ya tenías estas estrellas: el XP se gana al mejorar tu resultado.)'}),
+    lvAfter>lvBefore && h('div',{class:'banner',text:`⬆️ ¡Subiste al nivel ${lvAfter}! Ahora sos “${rankOf(lvAfter)}”.`}),
+    newBadges.map(b=>h('div',{class:'banner',text:`${b.icon} Insignia nueva: ${b.name}`})),
+    L.recap && h('div',{class:'recap'},h('h3',null,'📌 Lo que aprendiste'),h('p',null,rich(L.recap))),
+    h('div',{class:'row',style:'justify-content:center;margin-top:10px'},
+      next ? h('button',{class:'btn primary big',onclick:()=>showLesson(next)},'Siguiente misión ▶') :
+             h('button',{class:'btn primary big',onclick:screenMap},'Ver el mapa ▶'),
+      h('button',{class:'btn',onclick:()=>startLevel(L)},'🔁 Repetir'),
+      h('button',{class:'btn',onclick:screenRanking},'🏆 Ranking'),
+      h('button',{class:'btn ghost',onclick:screenMap},'Mapa')),
+    !next && h('p',{class:'banner',text:'🎊 ¡Terminaste HTML Quest! Ya sabés armar páginas web con HTML. Repetí misiones para conseguir las 3 estrellas.'})));
+}
+
+/* ============================================================
+   TIPOS DE MISIÓN
+   ============================================================ */
+function previewPane(){
+  const tab=h('span',null,'Sin título');
+  const frame=h('iframe',{sandbox:'',title:'Vista previa'});
+  const el=h('div',{class:'browser'},h('div',{class:'bar'},h('span',{class:'dots',text:'●●●'}),h('div',{class:'tab'},'🌐 ',tab)),frame);
+  // Los nombres de la “carpeta de imágenes” se reemplazan por dibujos; <base target=_blank> evita que un enlace navegue dentro del marco.
+  const prepare = code => code.replace(/(\bsrc\s*=\s*)(["']?)([^"'\s>]+)\2/gi,(m,a,q,n)=>IMGS[n.toLowerCase()]?`${a}"${IMGS[n.toLowerCase()]}"`:m)+'<base target="_blank">';
+  return { el, set(code){ frame.srcdoc=prepare(code); let t=''; try{ t=new DOMParser().parseFromString(code,'text/html').title.trim(); }catch(e){} tab.textContent=t||'Sin título'; } };
+}
+const TYPES = {};
+
+/* --- preguntas --- */
+TYPES.quiz = (box,L)=>{
+  let i=0;
+  const show=()=>{
+    const q=L.questions[i];
+    let answered=false;
+    const opts=shuffle(q.opts.map((t,k)=>({t,ok:k===q.a})));
+    const list=h('div',{class:'opts'});
+    const next=nextBtn(i===L.questions.length-1?'¡Terminar! 🏁':'Siguiente ➜',()=>{ i++; i<L.questions.length?show():win(); });
+    next.hidden=true;
+    opts.forEach(o=>{
+      const b=h('button',{class:'opt',onclick:()=>{
+        if(S.finished||answered) return;
+        if(o.ok){ answered=true; b.classList.add('right'); [...list.children].forEach(x=>x.disabled=true); ok(q.why); next.hidden=false; }
+        else { b.classList.add('wrong'); b.disabled=true; bad('Mmm, esa no. ¡Probá con otra!'); }
+      }},rich(o.t));
+      list.append(b);
+    });
+    box.replaceChildren(h('div',{class:'card'},h('div',{class:'qhead',text:`Pregunta ${i+1} de ${L.questions.length}`}),h('div',{class:'qtext'},rich(q.q)),q.code&&h('pre',{class:'code'},hl(q.code)),list,next));
+  };
+  show();
+};
+
+/* --- ordenar bloques --- */
+TYPES.order = (box,L)=>{
+  let pool, built=[], marks=[];
+  const items=L.blocks.map(t=>({t}));
+  do{ pool=shuffle(items); }while(items.length>1 && pool.every((x,k)=>x===items[k]));
+  const poolEl=h('div',{class:'pool'}), buildEl=h('div',{class:'build'});
+  const check=h('button',{class:'btn primary',onclick:()=>verify()},'Comprobar ✔');
+  const reset=h('button',{class:'btn ghost small',onclick:()=>{ pool=shuffle(items); built=[]; marks=[]; draw(); }},'↺ Reiniciar');
+  const draw=()=>{
+    poolEl.replaceChildren(...pool.map(it=>h('button',{class:'blk',onclick:()=>{ if(S.finished)return; sfx.click(); pool.splice(pool.indexOf(it),1); built.push(it); marks=[]; draw(); }},hl(it.t))));
+    const ind=indentLines(built.map(b=>b.t));
+    buildEl.replaceChildren(...built.map((it,k)=>h('button',{class:'blk placed '+(marks[k]||''),title:'Tocá para sacarlo',onclick:()=>{ if(S.finished)return; sfx.click(); built.splice(k,1); pool.push(it); marks=[]; draw(); }},
+      h('span',{class:'ln',text:k+1}),h('span',{style:`padding-left:${ind[k]*22}px`},hl(it.t)))));
+    if(!built.length) buildEl.append(h('p',{class:'muted',style:'margin:8px',text:'👇 Tocá los bloques de abajo para ir armando el código acá.'}));
+    check.disabled=pool.length>0 || S.finished;
+  };
+  const verify=()=>{
+    const good=built.map((b,k)=>b.t===L.blocks[k]);
+    if(good.every(Boolean)){ marks=good.map(()=>'good'); draw(); ok(); check.hidden=true; reset.hidden=true; box.append(nextBtn('¡Siguiente! ➜',win)); }
+    else { marks=good.map(g=>g?'good':'badpos'); draw(); bad(`Hay ${good.filter(g=>!g).length} bloque(s) fuera de lugar (en rojo). Tocalos para sacarlos y acomodalos.`); }
+  };
+  const left=h('div',null,h('div',{class:'pvlabel',text:'Tu código:'}),buildEl,h('div',{class:'pvlabel',style:'margin-top:12px',text:'Bloques disponibles:'}),poolEl,h('div',{class:'row',style:'margin-top:12px'},check,reset));
+  if(L.target){ const pv=previewPane(); pv.set(L.target); box.replaceChildren(h('div',{class:'split'},left,h('div',null,h('div',{class:'pvlabel',text:'Así tiene que quedar:'}),pv.el))); }
+  else box.replaceChildren(left);
+  draw();
+};
+
+/* --- completar --- */
+TYPES.fill = (box,L)=>{
+  const parts=L.code.split(/\{\{(.+?)\}\}/);
+  const inputs=[]; let focused=null;
+  const pre=h('pre',{class:'code'});
+  parts.forEach((s,i)=>{
+    if(i%2===0){ pre.append(...hl(s)); return; }
+    const ans=s.toLowerCase().split('|');
+    const inp=h('input',{class:'blank',size:Math.max(3,ans[0].length+1),autocomplete:'off',spellcheck:'false',autocapitalize:'off','aria-label':'Espacio '+(inputs.length+1),
+      onfocus:()=>{focused=inp;}, onkeydown:e=>{ if(e.key==='Enter') verify(); }});
+    inp._ans=ans; inputs.push(inp); pre.append(inp);
+  });
+  const norm=v=>v.toLowerCase().replace(/[<>\/\s]/g,'');
+  const pv=previewPane();
+  const pvWrap=h('div',{hidden:true},h('div',{class:'pvlabel',text:'Así se ve tu código:'}),pv.el);
+  const btn=h('button',{class:'btn primary',onclick:()=>verify()},'Comprobar ✔');
+  const bank=L.bank&&h('div',{class:'bank'},h('span',{class:'muted',text:'Banco de palabras:'}),
+    L.bank.map(w=>h('button',{class:'blk',onclick:()=>{ if(S.finished)return; const t=(focused&&!focused.disabled&&focused)||inputs.find(x=>!x.disabled&&!x.value); if(t){ t.value=w; t.focus(); } sfx.click(); }},w)));
+  function verify(){
+    if(S.finished) return;
+    let wrong=0;
+    inputs.forEach(inp=>{
+      if(inp.disabled) return;
+      if(inp._ans.includes(norm(inp.value))){ inp.classList.remove('wrong'); inp.classList.add('right'); inp.disabled=true; }
+      else { inp.classList.add('wrong'); wrong++; }
+    });
+    if(wrong===0){
+      ok(); btn.hidden=true;
+      let k=0, final=''; parts.forEach((s,i)=>{ final+= i%2===0 ? s : norm(inputs[k++].value); });
+      pv.set(final); pvWrap.hidden=false; box.append(nextBtn('¡Siguiente! ➜',win));
+    } else bad(`${wrong} espacio${wrong>1?'s están':' está'} mal (en rojo). Revisalo y probá de nuevo.`);
+  }
+  box.replaceChildren(h('div',null,bank,L.files&&filesNote(),pre,btn,h('div',{style:'margin-top:14px'},pvWrap)));
+  inputs[0]&&inputs[0].focus();
+};
+
+/* --- cazabichos --- */
+TYPES.bugs = (box,L)=>{
+  const found=new Set(), total=L.bugs.length;
+  const counter=h('b',{text:`🐞 0/${total}`});
+  const next=nextBtn('¡Siguiente! ➜',win); next.hidden=true;
+  const rows=L.codeLines.map((line,i)=>{
+    const row=h('button',{class:'line',onclick:()=>{
+      if(S.finished||found.has(i)||row.classList.contains('miss')) return;
+      if(L.bugs.includes(i)){
+        found.add(i); row.classList.add('caught'); row.append(h('div',{class:'why'},'🐞 ',rich(L.explain[i])));
+        counter.textContent=`🐞 ${found.size}/${total}`;
+        if(found.size===total){ clearTimers(); ok('¡Atrapaste todos los bichos!'); next.hidden=false; }
+        else ok('¡Bicho atrapado!');
+      } else {
+        row.classList.add('miss'); bad('Esa línea está bien. ¡Cuidado con las falsas alarmas!');
+        setTimeout(()=>row.classList.remove('miss'),900);
+      }
+    }},h('span',{class:'ln',text:i+1}),hl(line));
+    return row;
+  });
+  const items=[h('div',{class:'row',style:'margin-bottom:8px'},counter)];
+  if(L.time){
+    let t=L.time; const bar=h('div',{class:'timebar'},h('i')), lbl=h('b',{text:`⏱ ${t}s`}); items[0].append(lbl);
+    items.push(bar);
+    S.timer=setInterval(()=>{
+      t-=.25; bar.firstChild.style.width=Math.max(0,t/L.time*100)+'%'; lbl.textContent=`⏱ ${Math.max(0,Math.ceil(t))}s`;
+      if(t<=0){ t=L.time; bad('⏰ ¡Se acabó el tiempo! Reinicio el reloj.'); }
+    },250);
+  }
+  box.replaceChildren(h('div',{class:'card'},...items,h('div',{class:'lines'},rows),next));
+};
+
+/* --- unir parejas --- */
+TYPES.match = (box,L)=>{
+  const right=shuffle(L.pairs.map((p,i)=>({i,t:p.b})));
+  let sel=null, solved=0;
+  const next=nextBtn('¡Siguiente! ➜',win); next.hidden=true;
+  const lefts=L.pairs.map((p,i)=>{
+    const b=h('button',{class:'opt',onclick:()=>{
+      if(S.finished||b.disabled) return;
+      sfx.click(); if(sel) sel.style.outline=''; sel=b; b.style.outline='3px solid var(--gold)';
+    }},h('code',{class:'ic',text:p.a}));
+    b._i=i; return b;
+  });
+  const rights=right.map(it=>{
+    const b=h('button',{class:'opt',onclick:()=>{
+      if(S.finished||b.disabled) return;
+      if(!sel){ say('Primero tocá una etiqueta de la izquierda 👈','tip'); return; }
+      if(sel._i===it.i){
+        sel.style.outline=''; sel.classList.add('right'); sel.disabled=true; b.classList.add('right'); b.disabled=true; sel=null; solved++;
+        if(solved===L.pairs.length){ ok('¡Todas unidas!'); next.hidden=false; } else ok();
+      } else {
+        b.classList.add('wrong'); bad('Esas dos no van juntas. ¡Probá de nuevo!'); setTimeout(()=>b.classList.remove('wrong'),700);
+        sel.style.outline=''; sel=null;
+      }
+    }},rich(it.t));
+    return b;
+  });
+  box.replaceChildren(h('div',{class:'card'},
+    h('div',{class:'qhead',text:'Tocá una etiqueta y después su pareja'}),
+    h('div',{class:'split'},h('div',{class:'pool',style:'flex-direction:column'},lefts),h('div',{class:'pool',style:'flex-direction:column'},rights)),next));
+};
+
+/* --- programar --- */
+TYPES.code = (box,L)=>{
+  const rules=[...L.rules,{ label:'No hay etiquetas mal cerradas', ok:(c,d,issues)=>c.trim().length>0&&issues.length===0 }];
+  const ta=h('textarea',{class:'editor',spellcheck:'false',autocapitalize:'off',autocomplete:'off',autocorrect:'off',placeholder:L.placeholder||'Escribí tu código acá…'});
+  ta.value=L.starter||'';
+  const pv=previewPane();
+  const goals=h('ul',{class:'goals'});
+  const lintBox=h('div',{class:'lint',hidden:true});
+  let timer=null;
+  function evaluate(){
+    const code=ta.value; let doc; try{ doc=new DOMParser().parseFromString(code,'text/html'); }catch(e){ doc=document.implementation.createHTMLDocument(''); }
+    const issues=lint(code);
+    return { issues, res:rules.map(r=>{ try{ return !!r.ok(code,doc,issues); }catch(e){ return false; } }) };
+  }
+  function refresh(){
+    pv.set(ta.value);
+    const {issues,res}=evaluate();
+    goals.replaceChildren(...rules.map((r,i)=>h('li',{class:res[i]?'done':''},h('span',{text:res[i]?'✅':'⬜'}),h('span',null,rich(r.label)))));
+    lintBox.hidden=!issues.length;
+    lintBox.replaceChildren(h('b',{text:'🔧 Revisor de código:'}),...issues.slice(0,3).map(t=>h('p',{text:t})));
+    return res;
+  }
+  ta.addEventListener('input',()=>{ clearTimeout(timer); timer=setTimeout(refresh,150); });
+  ta.addEventListener('keydown',e=>{
+    if(e.key==='Tab'&&!e.shiftKey){ e.preventDefault(); const s=ta.selectionStart; ta.setRangeText('  ',s,ta.selectionEnd,'end'); ta.dispatchEvent(new Event('input')); }
+  });
+  const check=h('button',{class:'btn primary',onclick:()=>{
+    if(S.finished) return;
+    const res=refresh();
+    if(res.every(Boolean)){ ok('¡Misión cumplida!'); ta.disabled=true; check.hidden=true; box.append(nextBtn('¡Terminar! 🏁',win)); }
+    else { const i=res.findIndex(x=>!x); bad('Todavía falta: '+rules[i].label,{free:true}); }
+  }},'Comprobar ✔');
+  box.replaceChildren(h('div',{class:'split'},
+    h('div',null,h('div',{class:'pvlabel',text:'🎯 Objetivos'}),goals,L.files&&filesNote(),h('div',{class:'pvlabel',text:'Tu código:'}),ta,lintBox,h('div',{class:'row',style:'margin-top:12px'},check)),
+    h('div',null,h('div',{class:'pvlabel',text:'Vista previa (así se ve en el navegador):'}),pv.el)));
+  refresh();
+  ta.focus();
+};
+
+/* ============================================================
+   PANEL DOCENTE
+   ============================================================ */
+function askPin(){
+  if(teacherOK){ screenTeacher(); return; }
+  const inp=h('input',{type:'password',placeholder:'Clave docente',autocomplete:'off',onkeydown:e=>{ if(e.key==='Enter') go(); }});
+  let close;
+  const go=()=>{ if(inp.value===TEACHER_PIN){ teacherOK=true; close(); screenTeacher(); } else { toast('Clave incorrecta'); inp.select(); } };
+  close=modal(h('div',{class:'modal-card'},h('h2',null,'🧑‍🏫 Panel docente'),h('label',{class:'field'},h('span',null,'Ingresá la clave'),inp),
+    h('div',{class:'row',style:'justify-content:center'},h('button',{class:'btn primary',onclick:go},'Entrar'),h('button',{class:'btn ghost',onclick:()=>close()},'Cancelar'))));
+  inp.focus();
+}
+function screenTeacher(){
+  const all=Object.values(db.players);
+  const cursos=[...new Set(all.map(p=>p.curso))].sort();
+  let cursoSel='';
+  const tbody=h('tbody');
+  const info=h('span',{class:'muted'});
+  const list=()=>all.filter(p=>!cursoSel||p.curso===cursoSel).sort((a,b)=>a.curso.localeCompare(b.curso,'es')||a.name.localeCompare(b.name,'es'));
+  const stats=p=>({ xp:xpOf(p), n:Object.keys(p.done).length, st:Object.values(p.done).reduce((s,d)=>s+d.stars,0) });
+  const draw=()=>{
+    const ps=list(); info.textContent=`${ps.length} alumno(s)`;
+    tbody.replaceChildren(...ps.map(p=>{
+      const s=stats(p);
+      return h('tr',null,
+        h('td',{text:`${p.avatar} ${p.name}`}),h('td',{text:p.curso}),h('td',{text:levelOf(s.xp)}),h('td',{text:s.xp}),
+        h('td',{text:`${s.n}/${LEVELS.length}`}),h('td',{text:`${s.st}/${LEVELS.length*3}`}),h('td',{text:p.totalErrors}),
+        h('td',{text:p.lastSeen?new Date(p.lastSeen).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'}):'—'}),
+        h('td',null,h('button',{class:'btn small',onclick:()=>detail(p)},'Ver'),' ',
+          h('button',{class:'btn small danger',title:'Borrar alumno',onclick:()=>{ if(confirm(`¿Borrar a ${p.name} (${p.curso}) y todo su progreso?`)){ delete db.players[p.id]; if(db.current===p.id) db.current=null; all.splice(all.indexOf(p),1); saveDB(); draw(); } }},'🗑')));
+    }));
+    if(!ps.length) tbody.append(h('tr',null,h('td',{colspan:9,class:'muted',text:'Todavía no hay alumnos registrados en esta PC.'})));
+  };
+  const detail=p=>{
+    let close;
+    close=modal(h('div',{class:'modal-card left'},h('h2',{text:`${p.avatar} ${p.name} · ${p.curso}`}),
+      h('div',{class:'tablewrap'},h('table',null,h('thead',null,h('tr',null,['Misión','Estrellas','Mejor (errores)','Intentos'].map(t=>h('th',{text:t})))),
+        h('tbody',null,LEVELS.map(L=>{ const d=p.done[L.id]; return h('tr',null,h('td',{text:`${L.id} ${L.title}`}),h('td',{text:d?'★'.repeat(d.stars)+'☆'.repeat(3-d.stars):'—'}),h('td',{text:d?d.errors:'—'}),h('td',{text:d?d.tries:'—'})); })))),
+      h('div',{class:'row',style:'margin-top:12px'},h('button',{class:'btn',onclick:()=>close()},'Cerrar'))));
+  };
+  const sel=h('select',{onchange:()=>{ cursoSel=sel.value; draw(); }},h('option',{value:'',text:'Todos los cursos'}),cursos.map(c=>h('option',{value:c,text:c})));
+  const fileIn=h('input',{type:'file',accept:'.json,application/json',multiple:true,hidden:true,onchange:async()=>{
+    let added=0,merged=0,bad=0;
+    for(const f of fileIn.files){
+      try{
+        const data=JSON.parse(await f.text());
+        if(!data||data.app!=='htmlquest'||typeof data.players!=='object') throw 0;
+        for(const raw of Object.values(data.players)){
+          const c=cleanPlayer(raw); if(!c){ bad++; continue; }
+          if(db.players[c.id]){ mergePlayer(db.players[c.id],c); merged++; } else { db.players[c.id]=c; added++; }
+        }
+      }catch(e){ bad++; }
+    }
+    saveDB(); fileIn.value=''; toast(`Importado: ${added} nuevo(s), ${merged} actualizado(s)${bad?`, ${bad} con error`:''}`);
+    teacherOK=true; screenTeacher();
+  }});
+  const csv=()=>{
+    const q=v=>`"${String(v).replace(/"/g,'""')}"`;
+    const head=['Curso','Alumno','Nivel','XP','Misiones completadas','Estrellas','Errores totales','Ultima conexion',...LEVELS.map(l=>`${l.id} ${l.title}`)];
+    const rows=list().map(p=>{ const s=stats(p); return [p.curso,p.name,levelOf(s.xp),s.xp,s.n,s.st,p.totalErrors,p.lastSeen?new Date(p.lastSeen).toLocaleString('es-AR'):'',...LEVELS.map(l=>p.done[l.id]?p.done[l.id].stars:'')]; });
+    download('htmlquest-planilla.csv','﻿'+[head,...rows].map(r=>r.map(q).join(';')).join('\r\n'),'text/csv;charset=utf-8');
+  };
+  mount(h('div',{class:'card'},
+    h('div',{class:'row'},h('h2',{style:'margin:0',text:'🧑‍🏫 Panel docente'}),h('div',{class:'grow'}),h('button',{class:'btn ghost',onclick:()=>{ teacherOK=false; db.current?screenMap():screenLogin(); }},'Salir')),
+    h('p',{class:'muted',text:'El progreso se guarda en el navegador de cada PC. Para juntar a todo el curso: en cada PC exportá el archivo, y acá importá todos los archivos (el mismo alumno en distintas PC se combina solo).'}),
+    h('div',{class:'row',style:'margin-bottom:12px'},sel,info,h('div',{class:'grow'}),
+      h('button',{class:'btn small',onclick:csv},'📊 Exportar planilla (Excel)'),
+      h('button',{class:'btn small',onclick:()=>download(`htmlquest-copia-${new Date().toISOString().slice(0,10)}.json`,JSON.stringify({app:'htmlquest',version:1,players:db.players},null,1),'application/json')},'💾 Exportar todo (.json)'),
+      h('button',{class:'btn small',onclick:()=>fileIn.click()},'📥 Importar archivos'),fileIn),
+    h('div',{class:'tablewrap'},h('table',null,h('thead',null,h('tr',null,['Alumno','Curso','Nivel','XP','Misiones','Estrellas','Errores','Última vez',''].map(t=>h('th',{text:t})))),tbody))));
+  draw();
+}
+
+/* ---------- arranque ---------- */
+if(db.current && db.players[db.current]) screenMap(); else screenLogin();
+</script>
+</body>
+</html>
