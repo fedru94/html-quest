@@ -952,6 +952,7 @@ function cleanPlayer(raw){
     if(LV[id] && d && d.stars>=1 && d.stars<=3) p.done[id]={ stars:d.stars|0, errors:Math.max(0,d.errors|0), tries:Math.max(1,d.tries|0), ts:+d.ts||0 };
   }
   if(raw.flags&&raw.flags.streak5) p.flags.streak5=true;
+  if(raw.anon && typeof raw.k==='string' && raw.k){ p.k=raw.k.slice(0,20); p.id='k_'+p.k; p.anon=true; }   // jugador recuperado de la nube (solo conocemos "Nombre + inicial")
   return p;
 }
 function mergePlayer(a,b){
@@ -982,8 +983,11 @@ function cyrb53(str,seed=0){
 }
 const shortName = n => { const t=n.trim().split(/\s+/); return t.length<2 ? t[0] : `${t[0]} ${t[t.length-1][0].toUpperCase()}.`; };
 const starsOf = p => Object.values(p.done).reduce((s,d)=>s+d.stars,0);
-const summary = p => ({ k:cyrb53(p.id), id:p.id, name:p.name, curso:p.curso, avatar:p.avatar, xp:xpOf(p), lv:levelOf(xpOf(p)), m:Object.keys(p.done).length, s:starsOf(p), e:p.totalErrors });
-const localRow = p => ({ k:cyrb53(p.id), n:shortName(p.name), c:p.curso, a:p.avatar, xp:xpOf(p), lv:levelOf(xpOf(p)), m:Object.keys(p.done).length, s:starsOf(p), e:p.totalErrors||0 });
+const keyOf = p => p.k || cyrb53(p.id);
+// Progreso completo que se guarda en la planilla (sin nombre: el nombre completo ya está en su propia columna).
+const cloudData = p => ({ v:1, avatar:p.avatar, done:p.done, flags:p.flags, spent:p.spent||0, totalErrors:p.totalErrors||0, created:p.created||0, lastSeen:p.lastSeen||0 });
+const summary = p => ({ k:keyOf(p), id:p.anon?'':p.id, name:p.anon?'':p.name, curso:p.curso, avatar:p.avatar, xp:xpOf(p), lv:levelOf(xpOf(p)), m:Object.keys(p.done).length, s:starsOf(p), e:p.totalErrors, p:cloudData(p) });
+const localRow = p => ({ k:keyOf(p), n:shortName(p.name), c:p.curso, a:p.avatar, xp:xpOf(p), lv:levelOf(xpOf(p)), m:Object.keys(p.done).length, s:starsOf(p), e:p.totalErrors||0 });
 const rankSort = (a,b) => (b.xp-a.xp) || (b.s-a.s) || ((a.e||0)-(b.e||0)) || a.n.localeCompare(b.n,'es');
 let lastSync = 0, rankCache = null;
 async function withTimeout(url,opts,ms=8000){
@@ -992,7 +996,7 @@ async function withTimeout(url,opts,ms=8000){
 }
 async function syncProgress(p,force){
   if(!RANKING_URL||!p||p===preview) return;
-  const s=summary(p), sig=`${s.xp}|${s.m}|${s.s}|${s.e}`;
+  const s=summary(p), sig=`v2|${s.xp}|${s.m}|${s.s}|${s.e}`;
   if(p.sync===sig) return;
   if(!force && Date.now()-lastSync<4000) return;
   lastSync=Date.now();
@@ -1005,6 +1009,58 @@ async function fetchRanking(force){
   const rows=await r.json();
   if(!Array.isArray(rows)) throw new Error('formato');
   return (rankCache={ t:Date.now(), rows, local:false });
+}
+
+/* ---------- progreso en la nube: seguir jugando desde cualquier PC ---------- */
+// Pide a la planilla el progreso guardado de un jugador. Devuelve null si no hay conexión o no existe.
+async function cloudLoad(k){
+  if(!RANKING_URL||!k) return null;
+  try{
+    const r=await withTimeout(RANKING_URL+'?action=load&k='+encodeURIComponent(k),{cache:'no-store'});
+    const j=await r.json();
+    return j && j.ok ? j : null;
+  }catch(e){ return null; }
+}
+// Para las filas viejas de la planilla (solo resumen: XP, misiones y estrellas) reconstruye qué misiones
+// hizo. Las misiones se desbloquean en orden, así que con el XP exacto se averigua cuáles fueron;
+// las estrellas de cada una no se guardaban, así que se reparten parejo respetando el total.
+function rebuildDone(m,s,xp){
+  m=Math.max(0,Math.min(m|0,LEVELS.length));
+  const main=LEVELS.filter(l=>!l.requires), esc=LEVELS.filter(l=>l.requires);
+  const base=xp-10*(s-m);
+  let pick=null;
+  for(let k=Math.min(m,main.length); k>=0 && !pick && m-k<=esc.length; k--){
+    const ids=new Set(main.slice(0,k).map(l=>l.id));
+    const wDone=n=>WORLDS[n-1].levels.every(l=>ids.has(l.id));
+    for(let mask=0; mask<(1<<esc.length); mask++){
+      const E=esc.filter((l,i)=>mask>>i&1);
+      if(E.length!==m-k) continue;
+      if(E.some(l=>!wDone(l.requires.world) || (l.requires.level && !E.some(x=>x.id===l.requires.level)))) continue;
+      const set=[...main.slice(0,k),...E];
+      if(set.reduce((t,l)=>t+l.xp,0)===base){ pick=set; break; }
+    }
+  }
+  if(!pick) pick=LEVELS.filter(l=>!l.requires).concat(LEVELS.filter(l=>l.requires)).slice(0,m);
+  const n=pick.length, total=Math.max(n,Math.min(s|0,3*n)), extra=total-n, done={};
+  pick.forEach((l,i)=>{ done[l.id]={ stars:1+Math.floor(extra/n)+(i<extra%n?1:0), errors:0, tries:1, ts:0 }; });
+  return done;
+}
+// Arma un jugador a partir de lo que devuelve la planilla (o de una fila del ranking, si no hay más datos).
+function playerFromCloud(j){
+  const d=j.d && typeof j.d==='object' ? j.d : null;
+  const p=cleanPlayer({ ...(d||{}), name:String(j.n||''), curso:String(j.c||''), avatar:(d&&d.avatar)||j.a, anon:true, k:String(j.k||'') });
+  if(!p || !p.anon) return null;
+  if(!d){ p.done=rebuildDone(+j.m||0,+j.s||0,+j.xp||0); p.totalErrors=Math.max(0,+j.e||0); }
+  return p;
+}
+// Trae lo que haya en la nube y lo junta con lo de esta PC (nunca se pierde avance de ninguno de los dos lados).
+async function pullCloud(p){
+  const j=await cloudLoad(keyOf(p));
+  if(!j) return;
+  const c=playerFromCloud(j);
+  if(!c) return;
+  if(!j.d && xpOf(p)>=xpOf(c)) return;          // la planilla solo tiene un resumen y esta PC sabe más
+  mergePlayer(p,c); saveDB();
 }
 
 const app = document.getElementById('app');
@@ -1050,15 +1106,38 @@ function screenLogin(){
     enter(id);
   };
   const filter=h('input',{placeholder:'🔎 Buscar mi nombre…',oninput:()=>draw()});
+  const cursoSel=h('select',{onchange:()=>draw()});
   const plist=h('div',{class:'plist'});
+  const cloudNote=h('p',{class:'muted',style:'margin:8px 0 0',text:RANKING_URL?'☁️ Buscando a los jugadores de todas las PCs…':''});
+  let cloud=[];             // jugadores guardados en la planilla que todavía no están en esta PC
   const draw=()=>{
-    const q=slug(filter.value);
-    const ps=Object.values(db.players).filter(p=>!q||slug(p.name+' '+p.curso).includes(q)).sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0));
+    const q=slug(filter.value), cs=cursoSel.value;
+    const ok=(n,c)=>(!q||slug(n+' '+c).includes(q)) && (!cs||slug(c)===cs);
+    const ps=Object.values(db.players).filter(p=>ok(p.name,p.curso)).sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0));
+    const cs2=cloud.filter(r=>ok(r.n,r.c)).sort((a,b)=>String(a.n).localeCompare(String(b.n),'es'));
     plist.replaceChildren(...ps.map(p=>h('button',{class:'pitem',onclick:()=>enter(p.id)},
       h('span',{class:'av',text:p.avatar}),
-      h('span',null,h('b',{text:p.name}),h('br'),h('small',{text:`${p.curso} · Nv ${levelOf(xpOf(p))} · ${Object.keys(p.done).length}/${LEVELS.length} misiones`})))));
-    if(!ps.length) plist.append(h('p',{class:'muted',text:Object.keys(db.players).length?'No encontré ese nombre.':'Todavía no hay jugadores en esta PC.'}));
+      h('span',null,h('b',{text:p.name}),h('br'),h('small',{text:`${p.curso} · Nv ${levelOf(xpOf(p))} · ${Object.keys(p.done).length}/${LEVELS.length} misiones`})))),
+      ...cs2.map(r=>h('button',{class:'pitem',onclick:()=>pickCloud(r)},
+      h('span',{class:'av',text:r.a||AVATARS[0]}),
+      h('span',null,h('b',{text:r.n}),h('br'),h('small',{text:`${r.c} · Nv ${r.lv||1} · ${r.m||0}/${LEVELS.length} misiones · ☁️`})))));
+    if(!ps.length&&!cs2.length) plist.append(h('p',{class:'muted',text:(Object.keys(db.players).length||cloud.length)?'No encontré ese nombre.':'Todavía no hay jugadores.'}));
   };
+  const fillCursos=()=>{
+    const seen=new Map();
+    [...Object.values(db.players).map(p=>p.curso),...cloud.map(r=>r.c)].forEach(c=>{ const s=slug(c); if(s&&!seen.has(s)) seen.set(s,c); });
+    const cur=cursoSel.value;
+    cursoSel.replaceChildren(h('option',{value:'',text:'Todos los cursos'}),...[...seen].sort((a,b)=>a[1].localeCompare(b[1],'es')).map(([s,c])=>h('option',{value:s,text:c})));
+    cursoSel.value=cur;
+  };
+  fillCursos();
+  if(RANKING_URL) fetchRanking(true).then(d=>{
+    if(!document.body.contains(plist)) return;
+    const mine=new Set(Object.values(db.players).map(keyOf));
+    cloud=d.local?[]:d.rows.filter(r=>r&&r.k&&r.n&&r.c&&!mine.has(r.k));
+    cloudNote.textContent=d.local?'':'Los que tienen ☁️ jugaron en otra PC: tocá tu nombre para seguir donde lo dejaste.';
+    fillCursos(); draw();
+  }).catch(()=>{ cloudNote.textContent='⚠️ No pude conectar: solo se ven los jugadores de esta PC.'; });
   const players=Object.keys(db.players).length;
   mount(
     h('div',{class:'hero'},h('h1',null,'HTML Quest ',h('span',{text:'🎮'})),h('p',null,'Aprendé a crear páginas web superando misiones. ¡Ganá XP, monedas e insignias!')),
@@ -1070,13 +1149,33 @@ function screenLogin(){
         h('span',{class:'muted',text:'Elegí tu avatar:'}),avBox,
         h('button',{class:'btn primary big',onclick:go},'¡A jugar! ▶')),
       h('div',{class:'card'},h('h2',null,'👋 Ya jugué antes'),
-        players>6 && filter, plist)),
+        (players>6||RANKING_URL) && h('div',{class:'row',style:'align-items:flex-end'},h('label',{class:'field grow',style:'margin:0'},filter),h('label',{class:'field',style:'margin:0'},cursoSel)), cloudNote, plist)),
     h('p',{class:'muted',style:'text-align:center;margin-top:22px'},
       h('button',{class:'btn ghost small',onclick:askPin},'🧑‍🏫 Panel docente')));
   draw();
   name.focus();
 }
-function enter(id){ db.current=id; db.players[id].lastSeen=Date.now(); saveDB(); sfx.click(); screenMap(); }
+const loadingCard = msg => h('div',{class:'card',style:'text-align:center'},h('p',{class:'muted',text:msg}));
+async function enter(id){
+  const p=db.players[id];
+  db.current=id; p.lastSeen=Date.now(); saveDB(); sfx.click();
+  if(RANKING_URL){ mount(loadingCard('☁️ Buscando tu progreso…')); await pullCloud(p); }
+  if(db.current!==id) return;
+  screenMap(); syncProgress(p,true);
+}
+// Elegir un jugador que solo existe en la planilla (jugó en otra PC o en otro navegador).
+async function pickCloud(r){
+  sfx.click();
+  if(!confirm(`¿Sos ${r.n} de ${r.c}?`)) return;
+  mount(loadingCard('☁️ Trayendo tu progreso…'));
+  const j=await cloudLoad(r.k);
+  const p=playerFromCloud(j||r);           // si la planilla todavía no tiene el detalle, se arma con la fila del ranking
+  if(!p){ toast('No pude cargar ese jugador 😕'); screenLogin(); return; }
+  if(db.players[p.id]) mergePlayer(db.players[p.id],p); else db.players[p.id]=p;
+  const me_=db.players[p.id];
+  db.current=p.id; me_.lastSeen=Date.now(); saveDB();
+  screenMap(); syncProgress(me_,true);
+}
 
 /* ---------- mapa ---------- */
 function screenMap(){
@@ -1112,7 +1211,7 @@ function screenMap(){
 
 /* ---------- ranking ---------- */
 function screenRanking(){
-  const p=me(); const myK=cyrb53(p.id);
+  const p=me(); const myK=keyOf(p);
   let scope='curso', data=null;
   const note=h('p',{class:'muted',style:'margin:0 0 12px'});
   const tabs=h('div',{class:'row',style:'margin-bottom:12px'});
